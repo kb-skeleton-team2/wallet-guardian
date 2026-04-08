@@ -11,6 +11,7 @@
       <router-link to="/dashboard">대시보드</router-link>
       <router-link to="/transactions">거래</router-link>
       <router-link to="/report">리포트</router-link>
+      <router-link to="/report">마이페이지</router-link>
     </nav>
 
     <router-view />
