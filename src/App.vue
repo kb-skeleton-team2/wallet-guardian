@@ -1,11 +1,21 @@
-<script setup></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div>
+    <nav
+      style="
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        border-bottom: 1px solid #ccc;
+      "
+    >
+      <router-link to="/dashboard">대시보드</router-link>
+      <router-link to="/transactions">거래</router-link>
+      <router-link to="/report">리포트</router-link>
+      <router-link to="/report">마이페이지</router-link>
+    </nav>
+
+    <router-view />
+  </div>
 </template>
 
-<style scoped></style>
+<script setup></script>
