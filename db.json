@@ -1,0 +1,129 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "홍길동",
+      "email": "hong@test.com",
+      "phone": "010-1234-5678",
+      "profileImage": "이미지 url",
+      "createdAt": "2026-04-01"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "1",
+      "userId": "1",
+      "date": "2026-04-01",
+      "type": "income",
+      "category": "월급",
+      "amount": 3200000,
+      "memo": "4월 급여",
+      "createdAt": "2026-04-01T09:00:00"
+    },
+    {
+      "id": "2",
+      "userId": "1",
+      "date": "2026-04-01",
+      "type": "expense",
+      "category": "주거/생활비",
+      "amount": 500000,
+      "memo": "4월 월세",
+      "createdAt": "2026-04-01T10:00:00"
+    },
+    {
+      "id": "3",
+      "userId": "1",
+      "date": "2026-04-02",
+      "type": "expense",
+      "category": "식비",
+      "amount": 9800,
+      "memo": "회사 근처 김치찌개",
+      "createdAt": "2026-04-02T12:30:00"
+    },
+    {
+      "id": "4",
+      "userId": "1",
+      "date": "2026-04-02",
+      "type": "expense",
+      "category": "교통비",
+      "amount": 2800,
+      "memo": "출퇴근 지하철",
+      "createdAt": "2026-04-02T08:00:00"
+    },
+    {
+      "id": "5",
+      "userId": "1",
+      "date": "2026-04-03",
+      "type": "expense",
+      "category": "식비",
+      "amount": 15000,
+      "memo": "친구와 파스타",
+      "createdAt": "2026-04-03T18:30:00"
+    },
+    {
+      "id": "6",
+      "userId": "1",
+      "date": "2026-04-03",
+      "type": "expense",
+      "category": "여가/문화",
+      "amount": 5500,
+      "memo": "아메리카노",
+      "createdAt": "2026-04-03T14:00:00"
+    },
+    {
+      "id": "7",
+      "userId": "1",
+      "date": "2026-04-04",
+      "type": "expense",
+      "category": "쇼핑",
+      "amount": 45000,
+      "memo": "봄 자켓 구매",
+      "createdAt": "2026-04-04T16:00:00"
+    },
+    {
+      "id": "8",
+      "userId": "1",
+      "date": "2026-04-05",
+      "type": "income",
+      "category": "용돈",
+      "amount": 200000,
+      "memo": "부모님 용돈",
+      "createdAt": "2026-04-05T11:00:00"
+    },
+    {
+      "id": "9",
+      "userId": "1",
+      "date": "2026-04-05",
+      "type": "expense",
+      "category": "주거/생활비",
+      "amount": 52000,
+      "memo": "핸드폰 요금",
+      "createdAt": "2026-04-05T09:00:00"
+    },
+    {
+      "id": "10",
+      "userId": "1",
+      "date": "2026-04-06",
+      "type": "expense",
+      "category": "보험",
+      "amount": 85000,
+      "memo": "실비보험 납입",
+      "createdAt": "2026-04-06T10:00:00"
+    }
+  ],
+  "categories": [
+    { "id": "1", "name": "월급", "type": "income" },
+    { "id": "2", "name": "용돈", "type": "income" },
+    { "id": "3", "name": "이자", "type": "income" },
+    { "id": "4", "name": "기타수입", "type": "income" },
+    { "id": "5", "name": "식비", "type": "expense" },
+    { "id": "6", "name": "교통비", "type": "expense" },
+    { "id": "7", "name": "주거/생활비", "type": "expense" },
+    { "id": "8", "name": "쇼핑", "type": "expense" },
+    { "id": "9", "name": "의료", "type": "expense" },
+    { "id": "10", "name": "교육", "type": "expense" },
+    { "id": "11", "name": "여가/문화", "type": "expense" },
+    { "id": "12", "name": "보험", "type": "expense" },
+    { "id": "13", "name": "기타지출", "type": "expense" }
+  ]
+}
