@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import DashboardPage from '../pages/DashboardPage.vue';
 import ReportPage from '../pages/ReportPage.vue';
 import TransactionsPage from '../pages/TransactionsPage.vue';
-import TransactionDetailPage from '../pages/TransactionDetailPage.vue';
+import MyPage from '@/pages/MyPage.vue';
 
 const routes = [
   {
@@ -26,10 +26,9 @@ const routes = [
     component: TransactionsPage,
   },
   {
-    path: '/transactions/:id',
-    name: 'transaction-detail',
-    component: TransactionDetailPage,
-    props: true,
+    path: '/mypage/:id',
+    name: 'mypage',
+    component: MyPage,
   },
 ];
 
