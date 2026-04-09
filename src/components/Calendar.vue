@@ -1,5 +1,5 @@
 <template>
-  <div class="card p-4" style="border-radius: 20px; width: 600px">
+  <div class="card p-4" style="border-radius: 20px; width: 48%">
     <!-- 헤더 -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div class="d-flex align-items-center gap-3">
