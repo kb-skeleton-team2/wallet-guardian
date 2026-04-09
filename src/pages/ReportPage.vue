@@ -4,7 +4,7 @@
       <div class="col-md-3">
         <div class="card h-100 text-center shadow-sm">
           <div class="card-body">
-            <h6 class="text-muted">총수입</h6>
+            <h6 class="text-muted">총 수입</h6>
             <h3>{{ totalIncome.toLocaleString() }}원</h3>
           </div>
         </div>
@@ -13,7 +13,7 @@
       <div class="col-md-3">
         <div class="card h-100 text-center shadow-sm">
           <div class="card-body">
-            <h6 class="text-muted">총지출</h6>
+            <h6 class="text-muted">총 지출</h6>
             <h3 class="text-danger">{{ totalExpense.toLocaleString() }}원</h3>
           </div>
         </div>
@@ -43,7 +43,13 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">카테고리별 지출 내역</h5>
           <select class="form-select w-auto" v-model="selectedMonth">
-            <option value="2026-04">2026-04</option>
+            <option
+              v-for="month in availableMonths"
+              :key="month"
+              :value="month"
+            >
+              {{ month }}
+            </option>
           </select>
         </div>
 
@@ -59,7 +65,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">
             {{
-              selectedCategory ? `${selectedCategory} 거래 내역` : '거래내역'
+              selectedCategory ? `${selectedCategory} 지출 내역` : '지출내역'
             }}
           </h5>
           <button
@@ -106,8 +112,8 @@ import axios from 'axios';
 import ReportCategoryChart from '@/components/report/ReportCategoryChart.vue';
 
 const transactions = ref([]);
-const selectedMonth = ref('2026-04');
 const selectedCategory = ref(null);
+const selectedMonth = ref('');
 
 const fetchTransactions = async () => {
   try {
@@ -115,10 +121,20 @@ const fetchTransactions = async () => {
       'http://localhost:3000/transactions?userId=1',
     );
     transactions.value = response.data;
-    console.log('거래 데이터:', response.data);
+
+    if (availableMonths.value.length > 0) {
+      selectedMonth.value = availableMonths.value[0];
+    }
   } catch (error) {
     console.error('거래 데이터 불러오기 실패:', error);
   }
+};
+
+const getCurrentMonth = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
 };
 
 //선택된 달
@@ -193,6 +209,12 @@ const handleSelectCategory = (category) => {
   }
   selectedCategory.value = category;
 };
+
+//월 목록 뽑기
+const availableMonths = computed(() => {
+  const months = transactions.value.map((item) => item.date.slice(0, 7));
+  return [...new Set(months)].sort().reverse();
+});
 
 onMounted(() => {
   fetchTransactions();
