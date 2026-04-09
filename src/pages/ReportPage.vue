@@ -20,6 +20,15 @@
         {{ item.amount.toLocaleString() }}원
       </li>
     </ul>
+
+    <hr />
+
+    <h2>카테고리별 지출 합계</h2>
+    <ul>
+      <li v-for="item in expenseByCategory" :key="item.category">
+        {{ item.category }} : {{ item.amount.toLocaleString() }}원
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -72,6 +81,25 @@ const netIncome = computed(() => {
 const savingRate = computed(() => {
   if (totalIncome.value === 0) return 0;
   return Math.round((netIncome.value / totalIncome.value) * 100);
+});
+
+//카테고리별 지출
+const expenseByCategory = computed(() => {
+  const result = {};
+
+  filteredTransactions.value
+    .filter((item) => item.type === 'expense')
+    .forEach((item) => {
+      if (!result[item.category]) {
+        result[item.category] = 0;
+      }
+      result[item.category] += item.amount;
+    });
+
+  return Object.entries(result).map(([category, amount]) => ({
+    category,
+    amount,
+  }));
 });
 
 onMounted(() => {
