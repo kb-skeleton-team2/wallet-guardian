@@ -176,7 +176,7 @@ onMounted(() => {
 }
 .calendar-cell.header {
   font-weight: bold;
-  background-color: #333;
+  background-color: #ffc107;
   color: white;
   border-radius: 4px;
   min-height: auto;
