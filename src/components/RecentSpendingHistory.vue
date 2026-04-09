@@ -1,6 +1,6 @@
 <template>
   <div class="spending-card">
-    <h2 class="title">최근 지출 내역</h2>
+    <h2 class="title">최근 내역</h2>
 
     <ul class="spending-list">
       <li
