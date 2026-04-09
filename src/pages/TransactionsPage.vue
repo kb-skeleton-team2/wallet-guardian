@@ -22,6 +22,14 @@
       </div>
     </div>
 
+    <!-- 필터 모달 -->
+    <FilterTransactionsModal
+      v-if="showFilterModal"
+      :initial-filter="{ ...activeFilter }"
+      @close="showFilterModal = false"
+      @apply="handleFilterApply"
+    />
+
     <!-- 테이블 -->
     <div class="table-area">
       <table class="table table-hover align-middle transactions-table">
@@ -132,8 +140,9 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, computed } from 'vue';
+import { onMounted, reactive, computed, ref } from 'vue';
 import axios from 'axios';
+import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
 
 // 카테고리 아이콘 매핑 (assets 이미지)
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
@@ -179,6 +188,17 @@ const state = reactive({
   searchQuery: '',
 });
 
+const showFilterModal = ref(false);
+const activeFilter = reactive({
+  type: 'all',
+  categories: [],
+  dateFrom: '',
+  dateTo: '',
+  amountMin: null,
+  amountMax: null,
+  sort: 'latest',
+});
+
 // 자산 합계
 const totalAsset = computed(() => {
   return state.transactions.reduce((sum, t) => {
@@ -197,9 +217,65 @@ function applySearch() {
 }
 
 function toggleFilter() {
-  // 필터 기능은 추후 구현 가능 (placeholder)
-  console.log('필터 토글');
+  showFilterModal.value = true;
 }
+
+function handleFilterApply(filterData) {
+  Object.assign(activeFilter, filterData);
+  showFilterModal.value = false;
+  state.currentPage = 1;
+  state.selectedIds = [];
+}
+
+// 필터 적용된 거래내역
+const filteredTransactions = computed(() => {
+  let list = [...state.transactions];
+
+  // 분류 필터
+  if (activeFilter.type !== 'all') {
+    list = list.filter((t) => t.type === activeFilter.type);
+  }
+
+  // 카테고리 필터
+  if (activeFilter.categories.length > 0) {
+    list = list.filter((t) => activeFilter.categories.includes(t.category));
+  }
+
+  // 기간 필터
+  if (activeFilter.dateFrom) {
+    list = list.filter((t) => t.date >= activeFilter.dateFrom);
+  }
+  if (activeFilter.dateTo) {
+    list = list.filter((t) => t.date <= activeFilter.dateTo);
+  }
+
+  // 금액 범위 필터
+  if (activeFilter.amountMin != null && activeFilter.amountMin !== '') {
+    list = list.filter((t) => t.amount >= activeFilter.amountMin);
+  }
+  if (activeFilter.amountMax != null && activeFilter.amountMax !== '') {
+    list = list.filter((t) => t.amount <= activeFilter.amountMax);
+  }
+
+  // 정렬
+  switch (activeFilter.sort) {
+    case 'oldest':
+      list.sort((a, b) => a.date.localeCompare(b.date));
+      break;
+    case 'amount_desc':
+      list.sort((a, b) => b.amount - a.amount);
+      break;
+    case 'amount_asc':
+      list.sort((a, b) => a.amount - b.amount);
+      break;
+    case 'latest':
+    default:
+      list.sort((a, b) => b.date.localeCompare(a.date));
+      break;
+  }
+
+  return list;
+});
 
 async function fetchTransactions() {
   try {
@@ -235,12 +311,12 @@ async function deleteTransactionHandler() {
 
 // 페이지네이션
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(state.transactions.length / ITEMS_PER_PAGE))
+  Math.max(1, Math.ceil(filteredTransactions.value.length / ITEMS_PER_PAGE))
 );
 
 const paginatedTransactions = computed(() => {
   const start = (state.currentPage - 1) * ITEMS_PER_PAGE;
-  return state.transactions.slice(start, start + ITEMS_PER_PAGE);
+  return filteredTransactions.value.slice(start, start + ITEMS_PER_PAGE);
 });
 
 function goToPage(page) {
