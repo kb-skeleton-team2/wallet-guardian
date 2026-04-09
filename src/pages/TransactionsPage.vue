@@ -24,6 +24,7 @@
             <button
               class="btn btn-sm btn-outline-dark btn-delete"
               :disabled="state.selectedIds.length === 0"
+              @click="deleteTransactionHandler"
             >
               선택삭제
             </button>
@@ -119,6 +120,25 @@ async function fetchTransactions() {
     state.transactions = data;
   } catch (err) {
     console.log(err);
+  }
+}
+
+async function deleteTransactionHandler() {
+  if (!confirm(`선택한 ${state.selectedIds.length}건을 삭제하시겠습니까?`))
+    return;
+
+  try {
+    // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
+    await Promise.all(
+      state.selectedIds.map((id) =>
+        axios.delete(`${BASE_URL}/transactions/${id}`)
+      )
+    );
+    // 삭제 후 목록 갱신
+    await fetchTransactions();
+    state.selectedIds = [];
+  } catch (err) {
+    alert('삭제 중 오류가 발생했습니다: ' + err.message);
   }
 }
 
