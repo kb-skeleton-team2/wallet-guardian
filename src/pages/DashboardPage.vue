@@ -1,7 +1,9 @@
 <template>
-  <div>
-    <h1>대시보드 페이지</h1>
-  </div>
+  <RecentTransactions></RecentTransactions>
+  <Calendar></Calendar>
 </template>
 
-<script setup></script>
+<script setup>
+import Calendar from '@/components/Calendar.vue';
+import RecentTransactions from '@/components/RecentTransactions.vue';
+</script>
