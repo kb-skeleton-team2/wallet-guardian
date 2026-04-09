@@ -1,40 +1,102 @@
 <template>
-  <div>
-    <h1>리포트 페이지</h1>
+  <div class="container py-4">
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">총수입</h6>
+            <h3>{{ totalIncome.toLocaleString() }}원</h3>
+          </div>
+        </div>
+      </div>
 
-    <p>선택한 월: {{ selectedMonth }}</p>
-    <p>해당 월 거래 개수: {{ filteredTransactions.length }}</p>
+      <div class="col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">총지출</h6>
+            <h3 class="text-danger">{{ totalExpense.toLocaleString() }}원</h3>
+          </div>
+        </div>
+      </div>
 
-    <hr />
+      <div class="col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">순수익</h6>
+            <h3>{{ netIncome.toLocaleString() }}원</h3>
+          </div>
+        </div>
+      </div>
 
-    <p>총수입: {{ totalIncome.toLocaleString() }}원</p>
-    <p>총지출: {{ totalExpense.toLocaleString() }}원</p>
-    <p>순수익: {{ netIncome.toLocaleString() }}원</p>
-    <p>저축률: {{ savingRate }}%</p>
+      <div class="col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <h6 class="text-muted">저축률</h6>
+            <h3 class="text-success">{{ savingRate }}%</h3>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <hr />
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">카테고리별 지출 내역</h5>
+          <select class="form-select w-auto" v-model="selectedMonth">
+            <option value="2026-04">2026-04</option>
+          </select>
+        </div>
 
-    <h2>카테고리별 지출 차트</h2>
-    <ReportCategoryChart
-      :expenseByCategory="expenseByCategory"
-      @select-category="handleSelectCategory"
-    />
+        <ReportCategoryChart
+          :expenseByCategory="expenseByCategory"
+          @select-category="handleSelectCategory"
+        />
+      </div>
+    </div>
 
-    <hr />
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">
+            {{
+              selectedCategory ? `${selectedCategory} 거래 내역` : '거래내역'
+            }}
+          </h5>
+          <button
+            v-if="selectedCategory"
+            class="btn btn-outline-secondary btn-sm"
+            @click="selectedCategory = null"
+          >
+            전체 보기
+          </button>
+        </div>
 
-    <h2>
-      {{
-        selectedCategory ? `${selectedCategory} 거래 내역` : '최근 거래 내역'
-      }}
-    </h2>
-
-    <ul>
-      <li v-for="item in displayedTransactions" :key="item.id">
-        {{ item.date }} / {{ item.category }} / {{ item.memo }} /
-        {{ item.type === 'expense' ? '-' : '+'
-        }}{{ item.amount.toLocaleString() }}원
-      </li>
-    </ul>
+        <ul class="list-group list-group-flush">
+          <li
+            v-for="item in displayedTransactions"
+            :key="item.id"
+            class="list-group-item d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <div class="fw-semibold">{{ item.memo }}</div>
+              <div class="text-muted small">
+                {{ item.date }} · {{ item.category }}
+              </div>
+            </div>
+            <div
+              :class="
+                item.type === 'expense'
+                  ? 'text-danger fw-bold'
+                  : 'text-primary fw-bold'
+              "
+            >
+              {{ item.type === 'expense' ? '-' : '+'
+              }}{{ item.amount.toLocaleString() }}원
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
