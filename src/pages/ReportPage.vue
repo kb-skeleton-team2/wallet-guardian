@@ -15,23 +15,24 @@
     <hr />
 
     <h2>카테고리별 지출 차트</h2>
-    <ReportCategoryChart :expenseByCategory="expenseByCategory" />
+    <ReportCategoryChart
+      :expenseByCategory="expenseByCategory"
+      @select-category="handleSelectCategory"
+    />
 
     <hr />
 
-    <ul>
-      <li v-for="item in filteredTransactions" :key="item.id">
-        {{ item.date }} / {{ item.type }} / {{ item.category }} /
-        {{ item.amount.toLocaleString() }}원
-      </li>
-    </ul>
+    <h2>
+      {{
+        selectedCategory ? `${selectedCategory} 거래 내역` : '최근 거래 내역'
+      }}
+    </h2>
 
-    <hr />
-
-    <h2>카테고리별 지출 합계</h2>
     <ul>
-      <li v-for="item in expenseByCategory" :key="item.category">
-        {{ item.category }} : {{ item.amount.toLocaleString() }}원
+      <li v-for="item in displayedTransactions" :key="item.id">
+        {{ item.date }} / {{ item.category }} / {{ item.memo }} /
+        {{ item.type === 'expense' ? '-' : '+'
+        }}{{ item.amount.toLocaleString() }}원
       </li>
     </ul>
   </div>
@@ -44,6 +45,7 @@ import ReportCategoryChart from '@/components/report/ReportCategoryChart.vue';
 
 const transactions = ref([]);
 const selectedMonth = ref('2026-04');
+const selectedCategory = ref(null);
 
 const fetchTransactions = async () => {
   try {
@@ -107,6 +109,28 @@ const expenseByCategory = computed(() => {
     amount,
   }));
 });
+
+//하단 카테고리별 거래내역
+const displayedTransactions = computed(() => {
+  let result = filteredTransactions.value.filter(
+    (item) => item.type === 'expense',
+  );
+
+  if (selectedCategory.value) {
+    result = result.filter((item) => item.category === selectedCategory.value);
+  }
+
+  return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+});
+
+//차트 조각 클릭 이벤트
+const handleSelectCategory = (category) => {
+  if (selectedCategory.value === category) {
+    selectedCategory.value = null;
+    return;
+  }
+  selectedCategory.value = category;
+};
 
 onMounted(() => {
   fetchTransactions();

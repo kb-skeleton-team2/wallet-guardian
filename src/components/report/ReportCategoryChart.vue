@@ -7,10 +7,17 @@
 <script setup>
 import { computed } from 'vue';
 import { Doughnut } from 'vue-chartjs';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  elements,
+} from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const emit = defineEmits(['select-category']);
 const props = defineProps({
   expenseByCategory: {
     type: Array,
@@ -43,6 +50,13 @@ const chartData = computed(() => {
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  onClick: (event, elements) => {
+    if (!elements.length) return;
+
+    const clickedIndex = elements[0].index;
+    const clickedCategory = props.expenseByCategory[clickedIndex].category;
+    emit('select-category', clickedCategory);
+  },
   plugins: {
     legend: {
       position: 'right',
