@@ -14,11 +14,24 @@
           placeholder="검색"
           @keyup.enter="applySearch"
         />
-        <button class="btn-action btn-search" @click="applySearch">검색</button>
-        <button class="btn-action btn-filter" @click="toggleFilter">
+        <button
+          class="btn-action btn-search"
+          @click="applySearch"
+        >
+          검색
+        </button>
+        <button
+          class="btn-action btn-filter"
+          @click="toggleFilter"
+        >
           필터
         </button>
-        <button class="btn-action btn-add" @click="openAddModal">+ 추가</button>
+        <button
+          class="btn-action btn-add"
+          @click="openAddModal"
+        >
+          + 추가
+        </button>
       </div>
     </div>
 
@@ -61,7 +74,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in paginatedTransactions" :key="item.id">
+          <tr
+            v-for="item in paginatedTransactions"
+            :key="item.id"
+          >
             <td>
               <input
                 type="checkbox"
@@ -103,7 +119,10 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <nav class="pagination-nav" aria-label="페이지 네비게이션">
+    <nav
+      class="pagination-nav"
+      aria-label="페이지 네비게이션"
+    >
       <button
         class="page-btn"
         :disabled="state.currentPage === 1"
@@ -128,12 +147,19 @@
         &gt;
       </button>
     </nav>
+    <AddTransactionModal
+      :isOpen="isModalOpen"
+      @close="isModalOpen = false"
+      @saved="fetchTransactions"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, computed } from 'vue';
+import { onMounted, reactive, ref, computed } from 'vue';
 import axios from 'axios';
+import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
+const isModalOpen = ref(false);
 
 // 카테고리 아이콘 매핑 (assets 이미지)
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
@@ -188,7 +214,7 @@ const totalAsset = computed(() => {
 
 function openAddModal() {
   // TODO: 모달 컴포넌트 연결 예정
-  console.log('거래내역 추가 모달 열기');
+  isModalOpen.value = true;
 }
 
 function applySearch() {
@@ -218,8 +244,8 @@ async function deleteTransactionHandler() {
     // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
     await Promise.all(
       state.selectedIds.map((id) =>
-        axios.delete(`${BASE_URL}/transactions/${id}`)
-      )
+        axios.delete(`${BASE_URL}/transactions/${id}`),
+      ),
     );
     // 삭제 후 목록 갱신
     await fetchTransactions();
@@ -235,7 +261,7 @@ async function deleteTransactionHandler() {
 
 // 페이지네이션
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(state.transactions.length / ITEMS_PER_PAGE))
+  Math.max(1, Math.ceil(state.transactions.length / ITEMS_PER_PAGE)),
 );
 
 const paginatedTransactions = computed(() => {
@@ -257,7 +283,7 @@ onMounted(() => {
 const isAllChecked = computed(() => {
   if (paginatedTransactions.value.length === 0) return false;
   return paginatedTransactions.value.every((item) =>
-    state.selectedIds.includes(item.id)
+    state.selectedIds.includes(item.id),
   );
 });
 
