@@ -2,22 +2,33 @@
   <div>
     <h1>리포트 페이지</h1>
 
-    <p>거래 개수: {{ transactions.length }}</p>
+    <p>선택한 월: {{ selectedMonth }}</p>
+    <p>해당 월 거래 개수: {{ filteredTransactions.length }}</p>
+
+    <hr />
+
+    <p>총수입: {{ totalIncome.toLocaleString() }}원</p>
+    <p>총지출: {{ totalExpense.toLocaleString() }}원</p>
+    <p>순수익: {{ netIncome.toLocaleString() }}원</p>
+    <p>저축률: {{ savingRate }}%</p>
+
+    <hr />
 
     <ul>
-      <li v-for="item in transactions" :key="item.id">
+      <li v-for="item in filteredTransactions" :key="item.id">
         {{ item.date }} / {{ item.type }} / {{ item.category }} /
-        {{ item.amount }}원
+        {{ item.amount.toLocaleString() }}원
       </li>
     </ul>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const transactions = ref([]);
+const selectedMonth = ref('2026-04');
 
 const fetchTransactions = async () => {
   try {
@@ -30,6 +41,38 @@ const fetchTransactions = async () => {
     console.error('거래 데이터 불러오기 실패:', error);
   }
 };
+
+//선택된 달
+const filteredTransactions = computed(() => {
+  return transactions.value.filter((item) =>
+    item.date.startsWith(selectedMonth.value),
+  );
+});
+
+//총수입
+const totalIncome = computed(() => {
+  return filteredTransactions.value
+    .filter((item) => item.type === 'income')
+    .reduce((sum, item) => sum + item.amount, 0);
+});
+
+//총 지출
+const totalExpense = computed(() => {
+  return filteredTransactions.value
+    .filter((item) => item.type === 'expense')
+    .reduce((sum, item) => sum + item.amount, 0);
+});
+
+//순수익
+const netIncome = computed(() => {
+  return totalIncome.value - totalExpense.value;
+});
+
+//저축률
+const savingRate = computed(() => {
+  if (totalIncome.value === 0) return 0;
+  return Math.round((netIncome.value / totalIncome.value) * 100);
+});
 
 onMounted(() => {
   fetchTransactions();
