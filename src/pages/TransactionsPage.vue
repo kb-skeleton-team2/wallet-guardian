@@ -1,7 +1,26 @@
 <template>
   <div class="container py-4 transactions-page">
     <!-- 헤더 영역: 제목 + 자산 정보 + 검색/필터/추가 -->
-    <h1 class="fw-bold fs-2 mt-4 mb-4">거래내역</h1>
+    <div class="header-row">
+      <h1 class="fw-bold fs-2 mt-4 mb-4">거래내역</h1>
+      <div class="header-actions">
+        <span class="asset-info"
+          >자산 · ₩{{ totalAsset.toLocaleString() }} · 1개월 변동</span
+        >
+        <input
+          v-model="state.searchQuery"
+          type="text"
+          class="search-input"
+          placeholder="검색"
+          @keyup.enter="applySearch"
+        />
+        <button class="btn-action btn-search" @click="applySearch">검색</button>
+        <button class="btn-action btn-filter" @click="toggleFilter">
+          필터
+        </button>
+        <button class="btn-action btn-add" @click="openAddModal">+ 추가</button>
+      </div>
+    </div>
 
     <!-- 테이블 -->
     <div class="table-area">
@@ -153,7 +172,34 @@ function getCategoryIcon(category) {
 
 const BASE_URL = 'http://localhost:3000';
 const ITEMS_PER_PAGE = 9;
-const state = reactive({ transactions: [], selectedIds: [], currentPage: 1 });
+const state = reactive({
+  transactions: [],
+  selectedIds: [],
+  currentPage: 1,
+  searchQuery: '',
+});
+
+// 자산 합계
+const totalAsset = computed(() => {
+  return state.transactions.reduce((sum, t) => {
+    return t.type === 'income' ? sum + t.amount : sum - t.amount;
+  }, 0);
+});
+
+function openAddModal() {
+  // TODO: 모달 컴포넌트 연결 예정
+  console.log('거래내역 추가 모달 열기');
+}
+
+function applySearch() {
+  // 검색 기능은 추후 구현 가능 (placeholder)
+  console.log('검색:', state.searchQuery);
+}
+
+function toggleFilter() {
+  // 필터 기능은 추후 구현 가능 (placeholder)
+  console.log('필터 토글');
+}
 
 async function fetchTransactions() {
   try {
@@ -250,6 +296,87 @@ function formatAmount(item) {
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 61px);
+}
+
+/* ===== 헤더 영역 ===== */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.asset-info {
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.search-input {
+  width: 160px;
+  height: 38px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus {
+  border-color: #ffbc00;
+}
+
+.btn-action {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-search {
+  background-color: #ffbc00;
+  border-color: #ffbc00;
+  color: #fff;
+}
+.btn-search:hover {
+  background-color: #ffd24d;
+  border-color: #ffd24d;
+}
+
+.btn-filter {
+  background-color: #fff;
+  color: #333;
+}
+.btn-filter:hover {
+  background-color: #f5f5f5;
+  border-color: #bbb;
+}
+
+.btn-add {
+  background-color: #ffbc00;
+  border-color: #ffbc00;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0 24px;
+}
+.btn-add:hover {
+  background-color: #ffd24d;
+  border-color: #ffd24d;
 }
 
 /* 카테고리 아이콘 */
