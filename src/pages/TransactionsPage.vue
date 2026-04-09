@@ -8,7 +8,12 @@
       <thead>
         <tr>
           <th class="checkbox-header">
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :checked="isAllChecked"
+              @change="toggleAll"
+            />
           </th>
           <th>분류</th>
           <th>날짜</th>
@@ -16,7 +21,11 @@
           <th>금액</th>
           <th>메모</th>
           <th class="btn-delete-header">
-            <button class="btn btn-sm btn-outline-dark btn-delete">
+            <button
+              class="btn btn-sm btn-outline-dark btn-delete"
+              :disabled="state.selectedIds.length === 0"
+              @click="deleteTransactionHandler"
+            >
               선택삭제
             </button>
           </th>
@@ -25,7 +34,12 @@
       <tbody>
         <tr v-for="item in state.transactions" :key="item.id">
           <td>
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :checked="state.selectedIds.includes(item.id)"
+              @change="toggleItem(item.id)"
+            />
           </td>
           <td class="text-center">
             <span
@@ -59,7 +73,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive } from 'vue';
+import { onMounted, reactive, computed } from 'vue';
 import axios from 'axios';
 
 // 카테고리 아이콘 매핑 (assets 이미지)
@@ -109,9 +123,57 @@ async function fetchTransactions() {
   }
 }
 
+async function deleteTransactionHandler() {
+  if (!confirm(`선택한 ${state.selectedIds.length}건을 삭제하시겠습니까?`))
+    return;
+
+  try {
+    // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
+    await Promise.all(
+      state.selectedIds.map((id) =>
+        axios.delete(`${BASE_URL}/transactions/${id}`)
+      )
+    );
+    // 삭제 후 목록 갱신
+    await fetchTransactions();
+    state.selectedIds = [];
+  } catch (err) {
+    alert('삭제 중 오류가 발생했습니다: ' + err.message);
+  }
+}
+
 onMounted(() => {
   fetchTransactions();
 });
+
+// 체크박스
+const isAllChecked = computed(() => {
+  if (state.transactions.length === 0) return false;
+  return state.transactions.every((item) =>
+    state.selectedIds.includes(item.id)
+  );
+});
+
+function toggleAll() {
+  if (isAllChecked.value) {
+    const transactionIds = state.transactions.map((t) => t.id);
+    state.selectedIds = state.selectedIds.filter(
+      (id) => !transactionIds.includes(id)
+    );
+  } else {
+    const transactionIds = state.transactions.map((t) => t.id);
+    state.selectedIds = [...transactionIds];
+  }
+}
+
+function toggleItem(id) {
+  const idx = state.selectedIds.indexOf(id);
+  if (idx != -1) {
+    state.selectedIds.splice(idx, 1);
+  } else {
+    state.selectedIds.push(id);
+  }
+}
 
 function formatDate(dateStr) {
   const [y, m, d] = dateStr.split('-');
@@ -208,5 +270,25 @@ function formatAmount(item) {
   font-weight: 600;
   color: #6d6d6d;
   border-color: #aeaeae;
+  transition: all 0.2s ease;
+}
+.btn-delete:not(:disabled) {
+  background-color: #ffbc00;
+  border-color: #ffbc00;
+  color: #333;
+}
+.btn-delete:not(:disabled):hover {
+  background-color: #ffd24d;
+  border-color: #ffd24d;
+}
+
+/* 체크박스 KB 스타일 */
+.form-check-input:checked {
+  background-color: #ffbc00;
+  border-color: #ffbc00;
+}
+.form-check-input:focus {
+  box-shadow: none;
+  border-color: inherit;
 }
 </style>
