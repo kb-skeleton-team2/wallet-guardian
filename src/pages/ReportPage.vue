@@ -14,6 +14,11 @@
 
     <hr />
 
+    <h2>카테고리별 지출 차트</h2>
+    <ReportCategoryChart :expenseByCategory="expenseByCategory" />
+
+    <hr />
+
     <ul>
       <li v-for="item in filteredTransactions" :key="item.id">
         {{ item.date }} / {{ item.type }} / {{ item.category }} /
@@ -35,6 +40,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import ReportCategoryChart from '@/components/report/ReportCategoryChart.vue';
 
 const transactions = ref([]);
 const selectedMonth = ref('2026-04');
