@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 91vh; width: 99vw">
+  <div style="height: 23vh; width: 99vw">
     <div class="d-flex justify-content-center gap-5">
       <!-- 이번달 수입 -->
       <div
