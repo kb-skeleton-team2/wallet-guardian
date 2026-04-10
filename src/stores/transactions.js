@@ -62,7 +62,7 @@ export const useTransactionStore = defineStore('transactions', () => {
 
   async function addTransaction(newItem) {
     // 1. 서버에 저장
-    const res = await axios.post('http://localhost:3000/transactions', newItem);
+    const res = await axios.post(`${BASE_URL}/transactions`, newItem);
 
     // 2. pinia에도 직접 추가 (서버 재요청 없이)
     transactions.value.push(res.data);
@@ -250,12 +250,6 @@ export const useTransactionStore = defineStore('transactions', () => {
   // 거래내역 페이지용 함수
   // ───────────────────────────────
 
-  // 거래내역 추가
-  async function addTransaction(newItem) {
-    const { data } = await axios.post(`${BASE_URL}/transactions`, newItem);
-    transactions.value.push(data);
-  }
-
   // 거래내역 삭제
   async function deleteTransactions(ids) {
     // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
@@ -298,7 +292,6 @@ export const useTransactionStore = defineStore('transactions', () => {
     getDayMap,
     selectDate,
     getCategoryIcon,
-    addTransaction,
     applyFilter,
     resetFilter,
 
