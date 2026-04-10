@@ -180,13 +180,6 @@ export const useTransactionStore = defineStore('transactions', () => {
   // 거래내역 페이지용 계산된 값
   // ───────────────────────────────
 
-  // 자산 합계
-  const totalAsset = computed(() => {
-    return transactions.value.reduce((sum, t) => {
-      return t.type === 'income' ? sum + t.amount : sum - t.amount;
-    }, 0);
-  });
-
   const filteredTransactions = computed(() => {
     let list = [...transactions.value];
 
@@ -296,7 +289,6 @@ export const useTransactionStore = defineStore('transactions', () => {
     resetFilter,
 
     // 계산된 값
-    totalAsset,
     filteredTransactions,
     monthlyIncome,
     monthlyExpense,
