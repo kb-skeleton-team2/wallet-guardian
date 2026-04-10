@@ -317,7 +317,7 @@ nav .nav-link.router-link-active,
     inset: 60px 0 0 0;
     width: 100%;
     border: none;
-    background: rgba(15, 23, 42, 0.16);
+    background: transparent;
     padding: 0;
     z-index: 105;
   }
