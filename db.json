@@ -5,7 +5,7 @@
       "name": "홍길동",
       "email": "hong@test.com",
       "phone": "010-1234-5678",
-      "profileImage": "이미지 url",
+      "profileImage": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/158.png",
       "createdAt": "2026-04-01"
     }
   ],
@@ -335,5 +335,6 @@
       "name": "기타지출",
       "type": "expense"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
