@@ -58,6 +58,14 @@ export const useCounterStore = defineStore('transactions', () => {
     );
   }
 
+  async function addTransaction(newItem) {
+    // 1. 서버에 저장
+    const res = await axios.post('http://localhost:3000/transactions', newItem);
+
+    // 2. pinia에도 직접 추가 (서버 재요청 없이)
+    transactions.value.push(res.data);
+  }
+
   // ───────────────────────────────
   // 계산된 값 (Computed)
   // ───────────────────────────────
@@ -104,7 +112,9 @@ export const useCounterStore = defineStore('transactions', () => {
 
   // 최근 거래내역 (id 높은 순 = 최신순)
   const recentTransactions = computed(() =>
-    [...transactions.value].sort((a, b) => b.id - a.id),
+    [...transactions.value].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    ),
   );
 
   // 달력에서 선택한 날짜의 거래내역
@@ -156,6 +166,7 @@ export const useCounterStore = defineStore('transactions', () => {
     getDayMap,
     selectDate,
     getCategoryIcon,
+    addTransaction,
 
     // 계산된 값
     monthlyIncome,
