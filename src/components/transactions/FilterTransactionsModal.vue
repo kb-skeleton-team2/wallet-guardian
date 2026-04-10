@@ -2,7 +2,14 @@
   <div class="filter-overlay" @click.self="$emit('close')">
     <div class="filter-modal">
       <!-- 헤더 -->
-      <h3 class="filter-title">필터</h3>
+      <div class="d-flex justify-content-between">
+        <h3 class="filter-title">필터</h3>
+        <button
+          type="button"
+          class="btn-close"
+          @click.self="$emit('close')"
+        ></button>
+      </div>
       <div class="filter-divider"></div>
 
       <!-- 분류 -->
@@ -438,5 +445,10 @@ function applyFilter() {
 
 .btn-apply:hover {
   background: #ffd24d;
+}
+
+/* ==== 모달 Close 버튼 ==== */
+.btn-close:focus {
+  box-shadow: 0 0 0 0.25rem rgba(255, 188, 0, 0.25);
 }
 </style>
