@@ -40,7 +40,7 @@
         class="menu-toggle"
         :class="{ open: menuOpen }"
         @click="toggleMenu"
-        aria-label="메뉴 열기"
+        :aria-label="menuOpen ? '메뉴 닫기' : '메뉴 열기'"
         :aria-expanded="menuOpen"
       >
         <span></span>
@@ -49,36 +49,48 @@
       </button>
     </div>
 
-    <!-- 모바일 메뉴 -->
+    <!-- 모바일 메뉴 오버레이 -->
     <transition name="mobile-menu">
-      <div v-if="menuOpen" class="mobile-menu border-top">
-        <nav class="mobile-nav">
-          <RouterLink to="/dashboard" class="mobile-nav-link" @click="closeMenu"
-            >대시보드</RouterLink
-          >
-          <RouterLink
-            to="/transactions"
-            class="mobile-nav-link"
-            @click="closeMenu"
-            >거래</RouterLink
-          >
-          <RouterLink to="/report" class="mobile-nav-link" @click="closeMenu"
-            >리포트</RouterLink
-          >
-          <RouterLink
-            to="/mypage/:id"
-            class="mobile-nav-link"
-            @click="closeMenu"
-            >마이페이지</RouterLink
-          >
-        </nav>
+      <div v-if="menuOpen" class="mobile-menu-layer">
+        <button
+          type="button"
+          class="mobile-menu-backdrop"
+          aria-label="메뉴 닫기"
+          @click="closeMenu"
+        ></button>
+
+        <div class="mobile-menu border-top">
+          <nav class="mobile-nav">
+            <RouterLink
+              to="/dashboard"
+              class="mobile-nav-link"
+              @click="closeMenu"
+              >대시보드</RouterLink
+            >
+            <RouterLink
+              to="/transactions"
+              class="mobile-nav-link"
+              @click="closeMenu"
+              >거래</RouterLink
+            >
+            <RouterLink to="/report" class="mobile-nav-link" @click="closeMenu"
+              >리포트</RouterLink
+            >
+            <RouterLink
+              to="/mypage/:id"
+              class="mobile-nav-link"
+              @click="closeMenu"
+              >마이페이지</RouterLink
+            >
+          </nav>
+        </div>
       </div>
     </transition>
   </header>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
 const username = ref('');
@@ -98,8 +110,21 @@ const handleResize = () => {
   }
 };
 
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    closeMenu();
+  }
+};
+
+watch(menuOpen, (isOpen) => {
+  if (window.innerWidth < 768) {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+});
+
 onMounted(async () => {
   window.addEventListener('resize', handleResize);
+  window.addEventListener('keydown', handleKeydown);
 
   try {
     const res = await fetch('http://localhost:3000/users/1');
@@ -112,6 +137,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
+  window.removeEventListener('keydown', handleKeydown);
+  document.body.style.overflow = '';
 });
 </script>
 
@@ -183,6 +210,7 @@ nav .nav-link.router-link-active,
   border: none;
   background: transparent;
   position: relative;
+  z-index: 120;
 }
 
 .menu-toggle span {
@@ -221,10 +249,19 @@ nav .nav-link.router-link-active,
   transform: rotate(-45deg);
 }
 
+.mobile-menu-layer {
+  display: none;
+}
+
+.mobile-menu-backdrop {
+  display: none;
+}
+
 .mobile-menu {
   display: none;
   background: #fff;
-  padding: 12px 20px 20px;
+  padding: 8px 20px 20px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
 }
 
 .mobile-nav {
@@ -237,37 +274,22 @@ nav .nav-link.router-link-active,
   color: #374151;
   text-decoration: none;
   font-size: 15px;
-  padding: 12px 4px;
+  padding: 14px 4px;
   border-bottom: 1px solid #f1f5f9;
   transition: color 0.2s ease;
 }
 
-.mobile-profile {
-  padding-top: 14px;
-}
-
-.mobile-profile-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-
-.mobile-profile-image {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-}
-
 .mobile-menu-enter-active,
 .mobile-menu-leave-active {
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .mobile-menu-enter-from,
 .mobile-menu-leave-to {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(-8px);
 }
 
 @media (max-width: 767.98px) {
@@ -285,8 +307,28 @@ nav .nav-link.router-link-active,
     display: block;
   }
 
+  .mobile-menu-layer {
+    display: block;
+  }
+
+  .mobile-menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 60px 0 0 0;
+    width: 100%;
+    border: none;
+    background: rgba(15, 23, 42, 0.16);
+    padding: 0;
+    z-index: 105;
+  }
+
   .mobile-menu {
     display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 110;
   }
 }
 </style>
