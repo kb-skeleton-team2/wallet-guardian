@@ -69,7 +69,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in paginatedTransactions" :key="item.id">
+          <tr
+            v-for="item in paginatedTransactions"
+            :key="item.id"
+            class="clickable-row"
+            @mousedown="onRowMouseDown"
+            @click="onRowClick(item.id, $event)"
+          >
             <td>
               <input
                 type="checkbox"
@@ -354,6 +360,27 @@ function toggleAll() {
   }
 }
 
+// 행 클릭으로 체크박스 토글 (드래그/텍스트 선택 시 무시)
+let mouseDownPos = { x: 0, y: 0 };
+
+function onRowMouseDown(e) {
+  mouseDownPos = { x: e.clientX, y: e.clientY };
+}
+
+function onRowClick(id, e) {
+  if (e.target.type === 'checkbox') return;
+
+  // 드래그 거리가 5px 이상이면 텍스트 선택으로 간주
+  const dx = Math.abs(e.clientX - mouseDownPos.x);
+  const dy = Math.abs(e.clientY - mouseDownPos.y);
+  if (dx > 5 || dy > 5) return;
+
+  const selection = window.getSelection();
+  if (selection && selection.toString().length > 0) return;
+
+  toggleItem(id);
+}
+
 function toggleItem(id) {
   const idx = state.selectedIds.indexOf(id);
   if (idx != -1) {
@@ -538,6 +565,10 @@ function formatAmount(item) {
 
 .transactions-table tbody tr:hover {
   background-color: #fffdf5;
+}
+
+.clickable-row {
+  cursor: pointer;
 }
 
 /* 체크박스 */
