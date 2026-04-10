@@ -1,48 +1,56 @@
 <template>
-  <div class="container py-4">
-    <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+  <div class="container py-3 py-md-4 report-page">
+    <div class="row g-3 mb-4 summary-row">
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm summary-card">
           <div class="card-body">
-            <h6 class="text-muted">총 수입</h6>
-            <h3>{{ totalIncome.toLocaleString() }}원</h3>
+            <h6 class="text-muted summary-label">총 수입</h6>
+            <h3 class="text-success summary-amount">
+              {{ totalIncome.toLocaleString() }}원
+            </h3>
           </div>
         </div>
       </div>
 
-      <div class="col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm summary-card">
           <div class="card-body">
-            <h6 class="text-muted">총 지출</h6>
-            <h3 class="text-danger">{{ totalExpense.toLocaleString() }}원</h3>
+            <h6 class="text-muted summary-label">총 지출</h6>
+            <h3 class="text-danger summary-amount">
+              {{ totalExpense.toLocaleString() }}원
+            </h3>
           </div>
         </div>
       </div>
 
-      <div class="col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm summary-card">
           <div class="card-body">
-            <h6 class="text-muted">순수익</h6>
-            <h3>{{ netIncome.toLocaleString() }}원</h3>
+            <h6 class="text-muted summary-label">순수익</h6>
+            <h3 class="text-primary summary-amount">
+              {{ netIncome.toLocaleString() }}원
+            </h3>
           </div>
         </div>
       </div>
 
-      <div class="col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm summary-card">
           <div class="card-body">
-            <h6 class="text-muted">저축률</h6>
-            <h3 class="text-success">{{ savingRate }}%</h3>
+            <h6 class="text-muted summary-label">저축률</h6>
+            <h3 class="text-primary summary-amount">{{ savingRate }}%</h3>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-4 section-card">
       <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">카테고리별 지출 내역</h5>
-          <select class="form-select w-auto" v-model="selectedMonth">
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2 gap-md-3 mb-3"
+        >
+          <h5 class="mb-0 section-title">카테고리별 지출 내역</h5>
+          <select class="form-select month-select" v-model="selectedMonth">
             <option
               v-for="month in availableMonths"
               :key="month"
@@ -53,8 +61,8 @@
           </select>
         </div>
 
-        <div class="d-flex justify-content-center">
-          <div style="max-width: 700px; width: 100%">
+        <div class="d-flex justify-content-center chart-wrapper">
+          <div class="chart-box">
             <ReportCategoryChart
               :expenseByCategory="expenseByCategory"
               @select-category="handleSelectCategory"
@@ -64,12 +72,17 @@
       </div>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm section-card">
       <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">거래내역</h5>
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2 gap-md-3 mb-3"
+        >
+          <h5 class="mb-0 section-title">거래내역</h5>
 
-          <select class="form-select w-auto" v-model="selectedCategory">
+          <select
+            class="form-select category-select"
+            v-model="selectedCategory"
+          >
             <option value="">전체</option>
             <option
               v-for="category in availableCategories"
@@ -85,19 +98,19 @@
           <li
             v-for="item in displayedTransactions"
             :key="item.id"
-            class="list-group-item d-flex justify-content-between align-items-center"
+            class="list-group-item transaction-item"
           >
-            <div>
-              <div class="fw-semibold">{{ item.memo }}</div>
-              <div class="text-muted small">
+            <div class="transaction-info">
+              <div class="fw-semibold transaction-memo">{{ item.memo }}</div>
+              <div class="text-muted small transaction-meta">
                 {{ item.date }} · {{ item.category }}
               </div>
             </div>
             <div
               :class="
                 item.type === 'expense'
-                  ? 'text-danger fw-bold'
-                  : 'text-primary fw-bold'
+                  ? 'text-danger fw-bold  transaction-amount'
+                  : 'text-primary fw-bold transaction-amount'
               "
             >
               {{ item.type === 'expense' ? '-' : '+'
@@ -224,3 +237,114 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.report-page {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.summary-card,
+.section-card {
+  border-radius: 1rem;
+}
+
+.summary-label {
+  font-size: 0.9rem;
+}
+
+.summary-amount {
+  font-size: 1.2rem;
+  margin-bottom: 0;
+  word-break: keep-all;
+}
+
+.section-title {
+  font-size: 1.05rem;
+}
+
+.month-select,
+.category-select {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart-wrapper {
+  width: 100%;
+}
+
+.chart-box {
+  width: 100%;
+  max-width: 700px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.transaction-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.transaction-memo,
+.transaction-meta,
+.transaction-amount {
+  word-break: break-word;
+}
+
+.transaction-amount {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+@media (max-width: 767.98px) {
+  .report-page {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .summary-row {
+    margin-bottom: 1rem;
+  }
+
+  .summary-card .card-body,
+  .section-card .card-body {
+    padding: 1rem;
+  }
+
+  .summary-label {
+    font-size: 0.8rem;
+  }
+
+  .summary-amount {
+    font-size: 1rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .transaction-amount {
+    width: 100%;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .month-select,
+  .category-select {
+    width: auto;
+    min-width: 160px;
+  }
+}
+</style>
