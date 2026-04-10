@@ -55,18 +55,16 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useCounterStore } from '@/stores/transactions.js';
+import { useTransactionStore } from '@/stores/transactions.js';
 import { storeToRefs } from 'pinia';
 
-const store = useCounterStore();
+const store = useTransactionStore();
 const { recentTransactions, selectedDate, selectedDateTransactions } =
   storeToRefs(store);
 const getCategoryIcon = store.getCategoryIcon;
 
 const displayTransactions = computed(() =>
-  selectedDate.value
-    ? selectedDateTransactions.value
-    : recentTransactions.value,
+  selectedDate.value ? selectedDateTransactions.value : recentTransactions.value
 );
 
 function formatDate(dateStr) {

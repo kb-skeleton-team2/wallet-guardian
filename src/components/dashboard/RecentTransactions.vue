@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import { useCounterStore } from '@/stores/transactions.js';
+import { useTransactionStore } from '@/stores/transactions.js';
 import { storeToRefs } from 'pinia';
 
 const store = useCounterStore();

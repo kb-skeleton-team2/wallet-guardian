@@ -10,15 +10,14 @@
         <div class="d-flex align-items-start gap-4">
           <div class="avatar-circle">
             <img
-              :src="profile.avatarUrl"
+              :src="userStore.user.avatarUrl"
               alt="프로필 이미지"
               class="w-100 h-100 avatar-img"
             />
           </div>
-
           <div class="pt-2">
             <div class="d-flex align-items-center gap-3 mb-3">
-              <h4 class="fw-bold mb-0">{{ profile.name }}</h4>
+              <h4 class="fw-bold mb-0">{{ userStore.user.name }}</h4>
               <button
                 class="edit-btn"
                 @click="startEdit"
@@ -28,10 +27,10 @@
               </button>
             </div>
             <p class="text-secondary small mb-1">
-              이메일 : {{ profile.email }}
+              이메일 : {{ userStore.user.email }}
             </p>
             <p class="text-secondary small mb-0">
-              전화번호 : {{ profile.phone }}
+              전화번호 : {{ userStore.user.phone }}
             </p>
           </div>
         </div>
@@ -108,62 +107,26 @@
 </template>
 
 <script setup>
-import axios from 'axios';
 import { ref, onMounted } from 'vue';
+import { useUserStore } from '@/stores/user';
 
-const DEFAULT_IMAGE =
-  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/158.png';
-
+const userStore = useUserStore();
 const isEditing = ref(false);
 const fileInput = ref(null);
-
-const profile = ref({
-  name: '',
-  email: '',
-  phone: '',
-  avatarUrl: '',
-  createdAt: '',
-});
 const editForm = ref({ name: '', email: '', phone: '', avatarUrl: '' });
 
-onMounted(async () => {
-  try {
-    const res = await axios.get('http://localhost:3000/users/1');
-    const user = res.data;
-    profile.value = {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      avatarUrl: user.profileImage?.startsWith('data:')
-        ? user.profileImage
-        : DEFAULT_IMAGE,
-      createdAt: user.createdAt,
-    };
-  } catch (e) {
-    console.error('데이터 로드 실패:', e);
-  }
+onMounted(() => {
+  userStore.fetchUser();
 });
 
 const startEdit = () => {
-  editForm.value = { ...profile.value };
+  editForm.value = { ...userStore.user };
   isEditing.value = true;
 };
 
 const saveProfile = async () => {
-  try {
-    await axios.put('http://localhost:3000/users/1', {
-      id: '1',
-      name: editForm.value.name,
-      email: editForm.value.email,
-      phone: editForm.value.phone,
-      profileImage: editForm.value.avatarUrl,
-      createdAt: profile.value.createdAt,
-    });
-    profile.value = { ...editForm.value };
-    isEditing.value = false;
-  } catch (e) {
-    console.error('저장 실패:', e);
-  }
+  await userStore.updateUser(editForm.value);
+  isEditing.value = false;
 };
 
 const triggerFileInput = () => fileInput.value.click();
@@ -186,14 +149,12 @@ const onFileChange = (e) => {
   height: calc(100vh - 60px);
   box-sizing: border-box;
 }
-
 .mypage-card {
   height: 100% !important;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
-
 .avatar-circle {
   width: 120px;
   height: 120px;
@@ -203,11 +164,9 @@ const onFileChange = (e) => {
   flex-shrink: 0;
   background-color: #fff;
 }
-
 .avatar-img {
   object-fit: cover;
 }
-
 .edit-btn {
   width: 32px;
   height: 32px;
@@ -220,18 +179,15 @@ const onFileChange = (e) => {
   justify-content: center;
   padding: 0;
 }
-
 .edit-form {
-  max-width: 600px; /* 입력창 너비 제한 */
+  max-width: 600px;
 }
-
 .photo-btn {
   background-color: #ffbc39;
   border: none;
   color: white;
   font-size: 0.9rem;
 }
-
 .save-btn {
   background-color: #ffbc39;
   border: none;
@@ -239,7 +195,6 @@ const onFileChange = (e) => {
   width: 200px;
   padding: 12px 0;
 }
-
 .form-control:focus {
   border-color: #ffbc39;
   box-shadow: 0 0 0 0.25rem rgba(255, 188, 57, 0.25);

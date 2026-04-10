@@ -15,7 +15,9 @@ import other_income from '@/assets/other_income.png';
 import public_transport from '@/assets/public_transport.png';
 import shopping from '@/assets/shopping.png';
 
-export const useCounterStore = defineStore('transactions', () => {
+const BASE_URL = 'http://localhost:3000';
+
+export const useTransactionStore = defineStore('transactions', () => {
   // 서버에서 받아온 전체 거래내역
   const transactions = ref([]);
 
@@ -50,17 +52,17 @@ export const useCounterStore = defineStore('transactions', () => {
     // 이미 데이터가 있으면 다시 불러오지 않음
     if (transactions.value.length > 0) return;
 
-    const res = await axios.get('http://localhost:3000/transactions');
+    const res = await axios.get(`${BASE_URL}/transactions`);
 
     // amount가 숫자인 데이터만 저장 (이상한 데이터 방어)
     transactions.value = res.data.filter(
-      (item) => item.amount !== undefined && !isNaN(item.amount),
+      (item) => item.amount !== undefined && !isNaN(item.amount)
     );
   }
 
   async function addTransaction(newItem) {
     // 1. 서버에 저장
-    const res = await axios.post('http://localhost:3000/transactions', newItem);
+    const res = await axios.post(`${BASE_URL}/transactions`, newItem);
 
     // 2. pinia에도 직접 추가 (서버 재요청 없이)
     transactions.value.push(res.data);
@@ -172,8 +174,8 @@ export const useCounterStore = defineStore('transactions', () => {
   // 최근 거래내역 (id 높은 순 = 최신순)
   const recentTransactions = computed(() =>
     [...transactions.value].sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-    ),
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    )
   );
 
   // 달력에서 선택한 날짜의 거래내역
@@ -181,7 +183,7 @@ export const useCounterStore = defineStore('transactions', () => {
     if (!selectedDate.value) return [];
 
     return transactions.value.filter(
-      (item) => item.date === selectedDate.value,
+      (item) => item.date === selectedDate.value
     );
   });
 
@@ -215,20 +217,139 @@ export const useCounterStore = defineStore('transactions', () => {
     selectedDate.value = dateStr;
   }
 
+  // ───────────────────────────────
+  // 거래내역 페이지용 상태
+  // ───────────────────────────────
+
+  // 필터
+  const filter = ref({
+    type: 'all',
+    categories: [],
+    dateFrom: '',
+    dateTo: '',
+    amountMin: null,
+    amountMax: null,
+    sort: 'latest',
+  });
+
+  // 검색
+  const searchQuery = ref('');
+
+  // ───────────────────────────────
+  // 거래내역 페이지용 계산된 값
+  // ───────────────────────────────
+
+  const filteredTransactions = computed(() => {
+    let list = [...transactions.value];
+
+    // 검색어 필터
+    if (searchQuery.value.trim()) {
+      const q = searchQuery.value.trim().toLowerCase();
+      list = list.filter(
+        (t) =>
+          t.category.toLowerCase().includes(q) ||
+          (t.memo && t.memo.toLowerCase().includes(q))
+      );
+    }
+
+    // 분류 필터
+    if (filter.value.type !== 'all') {
+      list = list.filter((t) => t.type === filter.value.type);
+    }
+
+    // 카테고리 필터
+    if (filter.value.categories.length > 0) {
+      list = list.filter((t) => filter.value.categories.includes(t.category));
+    }
+
+    // 기간 필터
+    if (filter.value.dateFrom) {
+      list = list.filter((t) => t.date >= filter.value.dateFrom);
+    }
+    if (filter.value.dateTo) {
+      list = list.filter((t) => t.date <= filter.value.dateTo);
+    }
+
+    // 금액 범위 필터
+    if (filter.value.amountMin != null && filter.value.amountMin !== '') {
+      list = list.filter((t) => t.amount >= filter.value.amountMin);
+    }
+    if (filter.value.amountMax != null && filter.value.amountMax !== '') {
+      list = list.filter((t) => t.amount <= filter.value.amountMax);
+    }
+
+    // 정렬
+    switch (filter.value.sort) {
+      case 'oldest':
+        list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case 'amount_desc':
+        list.sort((a, b) => b.amount - a.amount);
+        break;
+      case 'amount_asc':
+        list.sort((a, b) => a.amount - b.amount);
+        break;
+      case 'latest':
+      default:
+        list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+    }
+
+    return list;
+  });
+
+  // ───────────────────────────────
+  // 거래내역 페이지용 함수
+  // ───────────────────────────────
+
+  // 거래내역 삭제
+  async function deleteTransactions(ids) {
+    // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
+    await Promise.all(
+      ids.map((id) => axios.delete(`${BASE_URL}/transactions/${id}`))
+    );
+    transactions.value = transactions.value.filter((t) => !ids.includes(t.id));
+  }
+
+  // 필터 적용
+  function applyFilter(filterData) {
+    Object.assign(filter.value, filterData);
+  }
+
+  // 필터 초기화
+  function resetFilter() {
+    filter.value = {
+      type: 'all',
+      categories: [],
+      dateFrom: '',
+      dateTo: '',
+      amountMin: null,
+      amountMax: null,
+      sort: 'latest',
+    };
+    searchQuery.value = '';
+  }
+
   return {
     // 상태
     transactions,
     selectedDate,
+    filter,
+    searchQuery,
 
     // 함수
     fetchTransactions,
+    addTransaction,
+    deleteTransactions,
     getDayMap,
     selectDate,
     getCategoryIcon,
-    addTransaction,
     modifyTransaction,
+    applyFilter,
+    resetFilter,
 
     // 계산된 값
+    filteredTransactions,
     monthlyIncome,
     monthlyExpense,
     balance,

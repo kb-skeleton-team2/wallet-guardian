@@ -121,12 +121,30 @@
     {
       "userId": "1",
       "type": "expense",
-      "date": "2026-03-10",
-      "category": "기타지출",
-      "amount": 30000,
-      "memo": "테스트",
-      "createdAt": "2026-04-10T08:05:18.689Z",
-      "id": "YIvSpAh"
+      "category": "여가/문화",
+      "amount": 18000,
+      "memo": "전시회 입장권",
+      "createdAt": "2026-02-08T15:00:00"
+    },
+    {
+      "userId": "1",
+      "type": "expense",
+      "date": "2026-04-10",
+      "category": "식비",
+      "amount": 1800,
+      "memo": "과자",
+      "createdAt": "2026-04-10T05:29:36.228Z",
+      "id": "tlvZBB_"
+    },
+    {
+      "userId": "1",
+      "type": "expense",
+      "date": "2026-04-10",
+      "category": "쇼핑",
+      "amount": 43000,
+      "memo": "옷",
+      "createdAt": "2026-04-10T05:30:42.271Z",
+      "id": "GYTdNLs"
     }
   ],
   "categories": [

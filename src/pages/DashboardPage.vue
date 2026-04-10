@@ -48,14 +48,14 @@
 <script setup>
 import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
 import { onMounted, ref } from 'vue';
-import { useCounterStore } from '@/stores/transactions.js';
+import { useTransactionStore } from '@/stores/transactions.js';
 import plusModal from '@/assets/addModal.png';
 import RecentTransactions from '@/components/dashboard/RecentTransactions.vue';
 import Calendar from '@/components/dashboard/Calendar.vue';
 import RecentSpendingHistory from '@/components/dashboard/RecentSpendingHistory.vue';
 const isModalOpen = ref(false);
 
-const store = useCounterStore();
+const store = useTransactionStore();
 onMounted(() => {
   store.fetchTransactions();
 });

@@ -47,11 +47,11 @@
 </template>
 
 <script setup>
-import { useCounterStore } from '@/stores/transactions.js';
+import { useTransactionStore } from '@/stores/transactions.js';
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 
-const store = useCounterStore();
+const store = useTransactionStore();
 const { selectedDate } = storeToRefs(store);
 const now = new Date();
 const year = ref(now.getFullYear());
@@ -79,12 +79,16 @@ const calendarDays = computed(() => {
 });
 
 function handleDayClick(day) {
-  const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(
+    day
+  ).padStart(2, '0')}`;
   store.selectDate(key);
 }
 
 function getDayData(day) {
-  const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(
+    day
+  ).padStart(2, '0')}`;
   return dayMap.value[key] || { income: 0, expense: 0 };
 }
 

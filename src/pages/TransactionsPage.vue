@@ -5,46 +5,117 @@
       <h1 class="fw-bold fs-2 mt-4 mb-4">거래내역</h1>
       <div class="header-actions">
         <span class="asset-info"
-          >자산 · ₩{{ totalAsset.toLocaleString() }} · 1개월 변동</span
+          >자산 · ₩{{ store.balance.toLocaleString() }} · 1개월 변동</span
         >
         <input
-          v-model="state.searchQuery"
+          v-model="store.searchQuery"
           type="text"
           class="search-input"
           placeholder="검색"
           @keyup.enter="applySearch"
         />
-        <button
-          class="btn-action btn-search"
-          @click="applySearch"
-        >
-          검색
-        </button>
-        <button
-          class="btn-action btn-filter"
-          @click="toggleFilter"
-        >
+        <button class="btn-action btn-search" @click="applySearch">검색</button>
+        <button class="btn-action btn-filter" @click="toggleFilter">
           필터
         </button>
-        <button
-          class="btn-action btn-add"
-          @click="openAddModal"
-        >
-          + 추가
-        </button>
+        <button class="btn-action btn-add" @click="openAddModal">+ 추가</button>
       </div>
     </div>
 
     <!-- 필터 모달 -->
     <FilterTransactionsModal
       v-if="showFilterModal"
-      :initial-filter="{ ...activeFilter }"
+      :initial-filter="{ ...store.filter }"
       @close="showFilterModal = false"
       @apply="handleFilterApply"
     />
 
-    <!-- 테이블 -->
-    <div class="table-area">
+    <!-- 모바일 액션 바 -->
+    <div
+      class="mobile-action-bar d-md-none"
+      :class="{ 'is-active': selectedIds.length > 0 }"
+    >
+      <label class="select-all-label">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          :checked="isAllChecked"
+          @change="toggleAll"
+        />
+        <span class="selected-count">
+          {{
+            selectedIds.length > 0
+              ? `${selectedIds.length}건 선택됨`
+              : '전체 선택'
+          }}
+        </span>
+      </label>
+      <div class="mobile-action-buttons">
+        <button
+          class="btn btn-sm btn-edit"
+          :disabled="selectedIds.length !== 1"
+          @click="editTransactionHandler"
+        >
+          수정
+        </button>
+        <button
+          class="btn btn-sm btn-delete"
+          :disabled="selectedIds.length === 0"
+          @click="deleteTransactionHandler"
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+
+    <!-- 모바일 카드 리스트 -->
+    <div class="card-list d-md-none">
+      <div
+        v-for="item in paginatedTransactions"
+        :key="item.id"
+        class="transaction-card"
+        :class="{ selected: selectedIds.includes(item.id) }"
+        @click="onCardClick(item.id, $event)"
+      >
+        <input
+          type="checkbox"
+          class="form-check-input card-checkbox"
+          :checked="selectedIds.includes(item.id)"
+          @click.stop
+          @change="toggleItem(item.id)"
+        />
+        <img
+          :src="store.getCategoryIcon(item.category)"
+          :alt="item.category"
+          class="card-icon"
+        />
+        <div class="card-body-info">
+          <div class="card-top">
+            <span class="card-category">{{ item.category }}</span>
+            <span
+              class="badge"
+              :class="item.type === 'income' ? 'badge-income' : 'badge-expense'"
+            >
+              {{ item.type === 'income' ? '수입' : '지출' }}
+            </span>
+          </div>
+          <div class="card-date">{{ formatDate(item.date) }}</div>
+          <div v-if="item.memo" class="card-memo">{{ item.memo }}</div>
+        </div>
+        <div
+          class="card-amount"
+          :class="item.type === 'income' ? 'text-income' : 'text-expense'"
+        >
+          {{ formatAmount(item) }}
+        </div>
+      </div>
+      <div v-if="paginatedTransactions.length === 0" class="card-empty">
+        거래 내역이 없습니다.
+      </div>
+    </div>
+
+    <!-- 데스크톱 테이블 -->
+    <div class="table-area d-none d-md-block">
       <table class="table table-hover align-middle transactions-table">
         <colgroup>
           <col style="width: 48px" />
@@ -73,14 +144,14 @@
             <th class="btn-actions-header">
               <button
                 class="btn btn-sm btn-outline-dark btn-edit"
-                :disabled="state.selectedIds.length !== 1"
+                :disabled="selectedIds.length !== 1"
                 @click="editTransactionHandler"
               >
                 수정
               </button>
               <button
                 class="btn btn-sm btn-outline-dark btn-delete"
-                :disabled="state.selectedIds.length === 0"
+                :disabled="selectedIds.length === 0"
                 @click="deleteTransactionHandler"
               >
                 삭제
@@ -100,7 +171,7 @@
               <input
                 type="checkbox"
                 class="form-check-input"
-                :checked="state.selectedIds.includes(item.id)"
+                :checked="selectedIds.includes(item.id)"
                 @change="toggleItem(item.id)"
               />
             </td>
@@ -117,7 +188,7 @@
             <td class="text-body-secondary">{{ formatDate(item.date) }}</td>
             <td>
               <img
-                :src="getCategoryIcon(item.category)"
+                :src="store.getCategoryIcon(item.category)"
                 :alt="item.category"
                 class="category-icon me-1"
               />
@@ -137,14 +208,11 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <nav
-      class="pagination-nav"
-      aria-label="페이지 네비게이션"
-    >
+    <nav class="pagination-nav" aria-label="페이지 네비게이션">
       <button
         class="page-btn"
-        :disabled="state.currentPage === 1"
-        @click="goToPage(state.currentPage - 1)"
+        :disabled="currentPage === 1"
+        @click="goToPage(currentPage - 1)"
       >
         &lt;
       </button>
@@ -152,15 +220,15 @@
         v-for="page in totalPages"
         :key="page"
         class="page-btn"
-        :class="{ active: state.currentPage === page }"
+        :class="{ active: currentPage === page }"
         @click="goToPage(page)"
       >
         {{ page }}
       </button>
       <button
         class="page-btn"
-        :disabled="state.currentPage === totalPages"
-        @click="goToPage(state.currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        @click="goToPage(currentPage + 1)"
       >
         &gt;
       </button>
@@ -168,227 +236,117 @@
     <AddTransactionModal
       :isOpen="isModalOpen"
       @close="isModalOpen = false"
-      @saved="fetchTransactions"
+      @saved="isModalOpen = false"
     />
     <ModifyTransactionModal
       :isOpen="isModifyModalOpen"
       :transaction="selectedTransaction"
       @close="isModifyModalOpen = false"
-      @saved="fetchTransactions"
+      @saved="isModifyModalOpen = false"
     />
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, computed } from 'vue';
-import axios from 'axios';
+import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
+import { useTransactionStore } from '@/stores/transactions';
 import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
 import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
 import ModifyTransactionModal from '@/components/common/ModifyTransactionModal.vue';
+
+const store = useTransactionStore();
+
+// ───────────────────────────────
+// UI 전용 로컬 상태
+// ───────────────────────────────
 const isModalOpen = ref(false);
 const isModifyModalOpen = ref(false);
 const selectedTransaction = ref(null);
-
-// 카테고리 아이콘 매핑 (assets 이미지)
-import monthlyIncomeIcon from '@/assets/monthly_income.png';
-import allowanceIcon from '@/assets/allowance.png';
-import interestIcon from '@/assets/interest.png';
-import otherIncomeIcon from '@/assets/other_income.png';
-import foodIcon from '@/assets/food.png';
-import publicTransportIcon from '@/assets/public_transport.png';
-import costOfLivingIcon from '@/assets/cost_of_living.png';
-import shoppingIcon from '@/assets/shopping.png';
-import hospitalIcon from '@/assets/hospital.png';
-import educationIcon from '@/assets/education.png';
-import leisureIcon from '@/assets/leisure.png';
-import insuranceIcon from '@/assets/insurance.png';
-import otherExpenseIcon from '@/assets/other_expense.png';
-
-const categoryIconMap = {
-  월급: monthlyIncomeIcon,
-  용돈: allowanceIcon,
-  이자: interestIcon,
-  기타수입: otherIncomeIcon,
-  식비: foodIcon,
-  교통비: publicTransportIcon,
-  '주거/생활비': costOfLivingIcon,
-  쇼핑: shoppingIcon,
-  의료: hospitalIcon,
-  교육: educationIcon,
-  '여가/문화': leisureIcon,
-  보험: insuranceIcon,
-  기타지출: otherExpenseIcon,
-};
-
-function getCategoryIcon(category) {
-  return categoryIconMap[category] || otherExpenseIcon;
-}
-
-const BASE_URL = 'http://localhost:3000';
-const ITEMS_PER_PAGE = 9;
-const state = reactive({
-  transactions: [],
-  selectedIds: [],
-  currentPage: 1,
-  searchQuery: '',
-});
-
 const showFilterModal = ref(false);
-const activeFilter = reactive({
-  type: 'all',
-  categories: [],
-  dateFrom: '',
-  dateTo: '',
-  amountMin: null,
-  amountMax: null,
-  sort: 'latest',
-});
+const selectedIds = ref([]);
+const currentPage = ref(1);
 
-// 자산 합계
-const totalAsset = computed(() => {
-  return state.transactions.reduce((sum, t) => {
-    return t.type === 'income' ? sum + t.amount : sum - t.amount;
-  }, 0);
-});
+// 화면 크기에 따라 페이지당 항목 수 조정 (모바일 5건 / 데스크톱 9건)
+const isMobile = ref(false);
+let mobileMediaQuery = null;
 
-function openAddModal() {
-  // TODO: 모달 컴포넌트 연결 예정
-  isModalOpen.value = true;
+function updateIsMobile(e) {
+  isMobile.value = e.matches;
+  // 페이지 수가 줄어들면 현재 페이지 보정
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  }
 }
 
+const ITEMS_PER_PAGE = computed(() => (isMobile.value ? 5 : 9));
+
+// ───────────────────────────────
+// 검색
+// ───────────────────────────────
 function applySearch() {
-  // 검색 기능은 추후 구현 가능 (placeholder)
-  console.log('검색:', state.searchQuery);
+  currentPage.value = 1;
+  selectedIds.value = [];
 }
 
+// ───────────────────────────────
+// 필터
+// ───────────────────────────────
 function toggleFilter() {
   showFilterModal.value = true;
 }
 
 function handleFilterApply(filterData) {
-  Object.assign(activeFilter, filterData);
+  store.applyFilter(filterData);
   showFilterModal.value = false;
-  state.currentPage = 1;
-  state.selectedIds = [];
+  currentPage.value = 1;
+  selectedIds.value = [];
 }
 
-// 필터 적용된 거래내역
-const filteredTransactions = computed(() => {
-  let list = [...state.transactions];
-
-  // 분류 필터
-  if (activeFilter.type !== 'all') {
-    list = list.filter((t) => t.type === activeFilter.type);
-  }
-
-  // 카테고리 필터
-  if (activeFilter.categories.length > 0) {
-    list = list.filter((t) => activeFilter.categories.includes(t.category));
-  }
-
-  // 기간 필터
-  if (activeFilter.dateFrom) {
-    list = list.filter((t) => t.date >= activeFilter.dateFrom);
-  }
-  if (activeFilter.dateTo) {
-    list = list.filter((t) => t.date <= activeFilter.dateTo);
-  }
-
-  // 금액 범위 필터
-  if (activeFilter.amountMin != null && activeFilter.amountMin !== '') {
-    list = list.filter((t) => t.amount >= activeFilter.amountMin);
-  }
-  if (activeFilter.amountMax != null && activeFilter.amountMax !== '') {
-    list = list.filter((t) => t.amount <= activeFilter.amountMax);
-  }
-
-  // 정렬
-  switch (activeFilter.sort) {
-    case 'oldest':
-      list.sort((a, b) => a.date.localeCompare(b.date));
-      break;
-    case 'amount_desc':
-      list.sort((a, b) => b.amount - a.amount);
-      break;
-    case 'amount_asc':
-      list.sort((a, b) => a.amount - b.amount);
-      break;
-    case 'latest':
-    default:
-      list.sort((a, b) => b.date.localeCompare(a.date));
-      break;
-  }
-
-  return list;
-});
-
-async function fetchTransactions() {
-  try {
-    const { data } = await axios.get(`${BASE_URL}/transactions`);
-    state.transactions = data;
-  } catch (err) {
-    console.log(err);
-  }
+// ───────────────────────────────
+// 모달
+// ───────────────────────────────
+function openAddModal() {
+  isModalOpen.value = true;
 }
 
-async function deleteTransactionHandler() {
-  if (!confirm(`선택한 ${state.selectedIds.length}건을 삭제하시겠습니까?`))
-    return;
-
-  try {
-    // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
-    await Promise.all(
-      state.selectedIds.map((id) =>
-        axios.delete(`${BASE_URL}/transactions/${id}`),
-      ),
-    );
-    // 삭제 후 목록 갱신
-    await fetchTransactions();
-    state.selectedIds = [];
-    // 현재 페이지가 총 페이지를 넘으면 보정
-    if (state.currentPage > totalPages.value) {
-      state.currentPage = totalPages.value;
-    }
-  } catch (err) {
-    alert('삭제 중 오류가 발생했습니다: ' + err.message);
-  }
-}
-
+// ───────────────────────────────
 // 페이지네이션
+// ───────────────────────────────
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredTransactions.value.length / ITEMS_PER_PAGE)),
+  Math.max(
+    1,
+    Math.ceil(store.filteredTransactions.length / ITEMS_PER_PAGE.value)
+  )
 );
 
 const paginatedTransactions = computed(() => {
-  const start = (state.currentPage - 1) * ITEMS_PER_PAGE;
-  return filteredTransactions.value.slice(start, start + ITEMS_PER_PAGE);
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE.value;
+  return store.filteredTransactions.slice(start, start + ITEMS_PER_PAGE.value);
 });
 
 function goToPage(page) {
   if (page < 1 || page > totalPages.value) return;
-  state.currentPage = page;
-  state.selectedIds = [];
+  currentPage.value = page;
+  selectedIds.value = [];
 }
 
-onMounted(() => {
-  fetchTransactions();
-});
-
+// ───────────────────────────────
 // 체크박스 (현재 페이지 기준)
+// ───────────────────────────────
 const isAllChecked = computed(() => {
   if (paginatedTransactions.value.length === 0) return false;
   return paginatedTransactions.value.every((item) =>
-    state.selectedIds.includes(item.id),
+    selectedIds.value.includes(item.id)
   );
 });
 
 function toggleAll() {
   const pageIds = paginatedTransactions.value.map((t) => t.id);
   if (isAllChecked.value) {
-    state.selectedIds = state.selectedIds.filter((id) => !pageIds.includes(id));
+    selectedIds.value = selectedIds.value.filter((id) => !pageIds.includes(id));
   } else {
-    const newIds = pageIds.filter((id) => !state.selectedIds.includes(id));
-    state.selectedIds.push(...newIds);
+    const newIds = pageIds.filter((id) => !selectedIds.value.includes(id));
+    selectedIds.value.push(...newIds);
   }
 }
 
@@ -402,7 +360,6 @@ function onRowMouseDown(e) {
 function onRowClick(id, e) {
   if (e.target.type === 'checkbox') return;
 
-  // 드래그 거리가 5px 이상이면 텍스트 선택으로 간주
   const dx = Math.abs(e.clientX - mouseDownPos.x);
   const dy = Math.abs(e.clientY - mouseDownPos.y);
   if (dx > 5 || dy > 5) return;
@@ -414,23 +371,51 @@ function onRowClick(id, e) {
 }
 
 function toggleItem(id) {
-  const idx = state.selectedIds.indexOf(id);
-  if (idx != -1) {
-    state.selectedIds.splice(idx, 1);
+  const idx = selectedIds.value.indexOf(id);
+  if (idx !== -1) {
+    selectedIds.value.splice(idx, 1);
   } else {
-    state.selectedIds.push(id);
+    selectedIds.value.push(id);
   }
 }
 
+// 카드 클릭 (모바일)
+function onCardClick(id, e) {
+  // 체크박스 자체 클릭은 @click.stop으로 이미 차단됨
+  if (e.target.type === 'checkbox') return;
+  toggleItem(id);
+}
+
+// ───────────────────────────────
+// 수정 / 삭제
+// ───────────────────────────────
 function editTransactionHandler() {
-  if (state.selectedIds.length !== 1) return;
-  const targetId = state.selectedIds[0];
-  const target = state.transactions.find((t) => t.id === targetId);
+  if (selectedIds.value.length !== 1) return;
+  const targetId = selectedIds.value[0];
+  const target = store.transactions.find((t) => t.id === targetId);
   if (!target) return;
   selectedTransaction.value = target;
   isModifyModalOpen.value = true;
 }
 
+async function deleteTransactionHandler() {
+  if (!confirm(`선택한 ${selectedIds.value.length}건을 삭제하시겠습니까?`))
+    return;
+
+  try {
+    await store.deleteTransactions(selectedIds.value);
+    selectedIds.value = [];
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value;
+    }
+  } catch (err) {
+    alert('삭제 중 오류가 발생했습니다: ' + err.message);
+  }
+}
+
+// ───────────────────────────────
+// 포맷 유틸
+// ───────────────────────────────
 function formatDate(dateStr) {
   const [y, m, d] = dateStr.split('-');
   return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
@@ -440,6 +425,22 @@ function formatAmount(item) {
   const sign = item.type === 'expense' ? '-' : '';
   return `${sign}₩${item.amount.toLocaleString()}`;
 }
+
+// ───────────────────────────────
+// 초기 데이터 로드
+// ───────────────────────────────
+onMounted(() => {
+  store.fetchTransactions();
+  mobileMediaQuery = window.matchMedia('(max-width: 767px)');
+  isMobile.value = mobileMediaQuery.matches;
+  mobileMediaQuery.addEventListener('change', updateIsMobile);
+});
+
+onBeforeUnmount(() => {
+  if (mobileMediaQuery) {
+    mobileMediaQuery.removeEventListener('change', updateIsMobile);
+  }
+});
 </script>
 
 <style scoped>
@@ -707,5 +708,256 @@ function formatAmount(item) {
 .page-btn:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+/* ===== 모바일 카드 리스트 ===== */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.transaction-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.transaction-card:hover {
+  background-color: #fffdf5;
+}
+
+.transaction-card.selected {
+  border-color: #ffbc00;
+  background-color: #fffaeb;
+}
+
+.card-checkbox {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.card-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.card-body-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.card-category {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-date {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.card-memo {
+  font-size: 0.78rem;
+  color: #999;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-amount {
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.card-empty {
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+  padding: 40px 0;
+}
+
+/* ===== 모바일 액션 바 ===== */
+.mobile-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.mobile-action-bar.is-active {
+  background: #fffaeb;
+  border-color: #ffe9a8;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.selected-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #545045;
+}
+
+.mobile-action-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.mobile-action-buttons .btn-edit,
+.mobile-action-buttons .btn-delete {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+.mobile-action-buttons .btn-edit {
+  background-color: #ffbc00;
+  border-color: #ffbc00;
+  color: #545045;
+}
+.mobile-action-buttons .btn-edit:disabled {
+  background-color: #f0f0f0;
+  border-color: #ddd;
+  color: #aaa;
+}
+
+.mobile-action-buttons .btn-delete {
+  background-color: #e06060;
+  border-color: #e06060;
+  color: #fff;
+}
+.mobile-action-buttons .btn-delete:disabled {
+  background-color: #f0f0f0;
+  border-color: #ddd;
+  color: #aaa;
+}
+
+/* ===== 반응형: 헤더 영역 ===== */
+
+/* 태블릿 (≤ 991px) */
+@media (max-width: 991px) {
+  .transactions-page h1 {
+    font-size: 1.6rem !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .search-input {
+    width: 140px;
+    height: 36px;
+  }
+
+  .btn-action {
+    height: 36px;
+    padding: 0 16px;
+    font-size: 0.8rem;
+  }
+
+  .btn-add {
+    padding: 0 18px;
+  }
+
+  .transactions-table thead th,
+  .transactions-table tbody td {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.4rem;
+  }
+
+  .transactions-table thead th {
+    font-size: 0.9rem;
+  }
+}
+
+/* 모바일 (≤ 767px) */
+@media (max-width: 767px) {
+  .header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .transactions-page h1 {
+    font-size: 1.4rem !important;
+    margin-top: 0rem !important;
+    margin-bottom: 0rem !important;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .asset-info {
+    flex-basis: 100%;
+    font-size: 0.8rem;
+    white-space: normal;
+    margin-bottom: 4px;
+  }
+
+  .search-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+  }
+
+  .btn-action {
+    padding: 0 14px;
+    font-size: 0.78rem;
+  }
+
+  .btn-add {
+    padding: 0 16px;
+  }
+
+  /* 페이지네이션: 위아래 여백 확대 */
+  .pagination-nav {
+    gap: 4px;
+    margin: 28px 0 24px;
+    flex-wrap: wrap;
+  }
+
+  .page-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
 }
 </style>
