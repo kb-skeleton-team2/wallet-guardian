@@ -111,29 +111,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 import ReportCategoryChart from '@/components/report/ReportCategoryChart.vue';
+import { useCounterStore } from '@/stores/transactions';
 
-const transactions = ref([]);
+const transactionStore = useCounterStore();
 const selectedCategory = ref('');
 const selectedMonth = ref('');
 
-const fetchTransactions = async () => {
-  try {
-    const response = await axios.get(
-      'http://localhost:3000/transactions?userId=1',
-    );
-    console.log('report fetch 결과:', response.data);
-    transactions.value = response.data;
-
-    if (availableMonths.value.length > 0) {
-      selectedMonth.value = availableMonths.value[0];
-    }
-  } catch (error) {
-    console.error('거래 데이터 불러오기 실패:', error);
-  }
-};
+const transactions = computed(() => transactionStore.transactions);
 
 const getCurrentMonth = () => {
   const today = new Date();
@@ -225,7 +212,15 @@ const availableMonths = computed(() => {
   return [...new Set(months)].sort().reverse();
 });
 
-onMounted(() => {
-  fetchTransactions();
+watch(selectedMonth, () => {
+  selectedCategory.value = '';
+});
+
+onMounted(async () => {
+  await transactionStore.fetchTransactions();
+
+  if (availableMonths.value.length > 0 && !selectedMonth.value) {
+    selectedMonth.value = availableMonths.value[0];
+  }
 });
 </script>
