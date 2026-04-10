@@ -114,9 +114,9 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 import ReportCategoryChart from '@/components/report/ReportCategoryChart.vue';
-import { useCounterStore } from '@/stores/transactions';
+import { useTransactionStore } from '@/stores/transactions';
 
-const transactionStore = useCounterStore();
+const transactionStore = useTransactionStore();
 const selectedCategory = ref('');
 const selectedMonth = ref('');
 
@@ -132,7 +132,7 @@ const getCurrentMonth = () => {
 //선택된 달
 const filteredTransactions = computed(() => {
   return transactions.value.filter((item) =>
-    item.date.startsWith(selectedMonth.value),
+    item.date.startsWith(selectedMonth.value)
   );
 });
 
@@ -191,7 +191,7 @@ const availableCategories = computed(() => {
 //하단 카테고리별 거래내역
 const displayedTransactions = computed(() => {
   let result = filteredTransactions.value.filter(
-    (item) => item.type === 'expense',
+    (item) => item.type === 'expense'
   );
 
   if (selectedCategory.value) {
