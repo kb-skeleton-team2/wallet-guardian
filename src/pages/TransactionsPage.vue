@@ -14,11 +14,24 @@
           placeholder="검색"
           @keyup.enter="applySearch"
         />
-        <button class="btn-action btn-search" @click="applySearch">검색</button>
-        <button class="btn-action btn-filter" @click="toggleFilter">
+        <button
+          class="btn-action btn-search"
+          @click="applySearch"
+        >
+          검색
+        </button>
+        <button
+          class="btn-action btn-filter"
+          @click="toggleFilter"
+        >
           필터
         </button>
-        <button class="btn-action btn-add" @click="openAddModal">+ 추가</button>
+        <button
+          class="btn-action btn-add"
+          @click="openAddModal"
+        >
+          + 추가
+        </button>
       </div>
     </div>
 
@@ -124,7 +137,10 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <nav class="pagination-nav" aria-label="페이지 네비게이션">
+    <nav
+      class="pagination-nav"
+      aria-label="페이지 네비게이션"
+    >
       <button
         class="page-btn"
         :disabled="state.currentPage === 1"
@@ -154,6 +170,12 @@
       @close="isModalOpen = false"
       @saved="fetchTransactions"
     />
+    <ModifyTransactionModal
+      :isOpen="isModifyModalOpen"
+      :transaction="selectedTransaction"
+      @close="isModifyModalOpen = false"
+      @saved="fetchTransactions"
+    />
   </div>
 </template>
 
@@ -162,7 +184,10 @@ import { onMounted, reactive, ref, computed } from 'vue';
 import axios from 'axios';
 import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
 import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
+import ModifyTransactionModal from '@/components/common/ModifyTransactionModal.vue';
 const isModalOpen = ref(false);
+const isModifyModalOpen = ref(false);
+const selectedTransaction = ref(null);
 
 // 카테고리 아이콘 매핑 (assets 이미지)
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
@@ -314,8 +339,8 @@ async function deleteTransactionHandler() {
     // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
     await Promise.all(
       state.selectedIds.map((id) =>
-        axios.delete(`${BASE_URL}/transactions/${id}`)
-      )
+        axios.delete(`${BASE_URL}/transactions/${id}`),
+      ),
     );
     // 삭제 후 목록 갱신
     await fetchTransactions();
@@ -331,7 +356,7 @@ async function deleteTransactionHandler() {
 
 // 페이지네이션
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredTransactions.value.length / ITEMS_PER_PAGE))
+  Math.max(1, Math.ceil(filteredTransactions.value.length / ITEMS_PER_PAGE)),
 );
 
 const paginatedTransactions = computed(() => {
@@ -353,7 +378,7 @@ onMounted(() => {
 const isAllChecked = computed(() => {
   if (paginatedTransactions.value.length === 0) return false;
   return paginatedTransactions.value.every((item) =>
-    state.selectedIds.includes(item.id)
+    state.selectedIds.includes(item.id),
   );
 });
 
@@ -402,8 +427,8 @@ function editTransactionHandler() {
   const targetId = state.selectedIds[0];
   const target = state.transactions.find((t) => t.id === targetId);
   if (!target) return;
-  // TODO: 수정 모달 연결 예정
-  console.log('수정 대상:', target);
+  selectedTransaction.value = target;
+  isModifyModalOpen.value = true;
 }
 
 function formatDate(dateStr) {
