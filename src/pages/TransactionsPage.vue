@@ -5,7 +5,7 @@
       <h1 class="fw-bold fs-2 mt-4 mb-4">거래내역</h1>
       <div class="header-actions">
         <span class="asset-info"
-          >자산 · ₩{{ store.totalAsset.toLocaleString() }} · 1개월 변동</span
+          >자산 · ₩{{ store.balance.toLocaleString() }} · 1개월 변동</span
         >
         <input
           v-model="store.searchQuery"
