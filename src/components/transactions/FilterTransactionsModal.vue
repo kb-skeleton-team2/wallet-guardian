@@ -57,9 +57,141 @@
         <section class="filter-section">
           <h4 class="section-label">기간</h4>
           <div class="range-row">
-            <input v-model="filter.dateFrom" type="date" class="range-input" />
+            <div class="date-picker-wrapper">
+              <button class="date-display" @click="toggleDatePicker('from')">
+                {{ fromDateLabel }}
+              </button>
+              <transition name="slide-fade">
+                <div
+                  v-if="activePicker === 'from'"
+                  class="roller-picker-card"
+                  @click.stop
+                >
+                  <div class="roller-container">
+                    <div class="roller-highlight"></div>
+                    <div
+                      class="roller-column"
+                      ref="fromYearRoller"
+                      @scroll="handleFromYearScroll"
+                    >
+                      <div class="roller-space"></div>
+                      <div
+                        v-for="y in years"
+                        :key="'fy' + y"
+                        class="roller-item"
+                        :class="{ selected: y === fromYear }"
+                      >
+                        {{ y }}
+                      </div>
+                      <div class="roller-space"></div>
+                    </div>
+                    <div
+                      class="roller-column"
+                      ref="fromMonthRoller"
+                      @scroll="handleFromMonthScroll"
+                    >
+                      <div class="roller-space"></div>
+                      <div
+                        v-for="m in 12"
+                        :key="'fm' + m"
+                        class="roller-item"
+                        :class="{ selected: m === fromMonth }"
+                      >
+                        {{ m }}
+                      </div>
+                      <div class="roller-space"></div>
+                    </div>
+                    <div
+                      class="roller-column"
+                      ref="fromDayRoller"
+                      @scroll="handleFromDayScroll"
+                    >
+                      <div class="roller-space"></div>
+                      <div
+                        v-for="d in fromDaysInMonth"
+                        :key="'fd' + d"
+                        class="roller-item"
+                        :class="{ selected: d === fromDay }"
+                      >
+                        {{ d }}
+                      </div>
+                      <div class="roller-space"></div>
+                    </div>
+                  </div>
+                  <button class="picker-confirm-btn" @click="confirmFromDate">
+                    확인
+                  </button>
+                </div>
+              </transition>
+            </div>
             <span class="range-separator">~</span>
-            <input v-model="filter.dateTo" type="date" class="range-input" />
+            <div class="date-picker-wrapper">
+              <button class="date-display" @click="toggleDatePicker('to')">
+                {{ toDateLabel }}
+              </button>
+              <transition name="slide-fade">
+                <div
+                  v-if="activePicker === 'to'"
+                  class="roller-picker-card"
+                  @click.stop
+                >
+                  <div class="roller-container">
+                    <div class="roller-highlight"></div>
+                    <div
+                      class="roller-column"
+                      ref="toYearRoller"
+                      @scroll="handleToYearScroll"
+                    >
+                      <div class="roller-space"></div>
+                      <div
+                        v-for="y in years"
+                        :key="'ty' + y"
+                        class="roller-item"
+                        :class="{ selected: y === toYear }"
+                      >
+                        {{ y }}
+                      </div>
+                      <div class="roller-space"></div>
+                    </div>
+                    <div
+                      class="roller-column"
+                      ref="toMonthRoller"
+                      @scroll="handleToMonthScroll"
+                    >
+                      <div class="roller-space"></div>
+                      <div
+                        v-for="m in 12"
+                        :key="'tm' + m"
+                        class="roller-item"
+                        :class="{ selected: m === toMonth }"
+                      >
+                        {{ m }}
+                      </div>
+                      <div class="roller-space"></div>
+                    </div>
+                    <div
+                      class="roller-column"
+                      ref="toDayRoller"
+                      @scroll="handleToDayScroll"
+                    >
+                      <div class="roller-space"></div>
+                      <div
+                        v-for="d in toDaysInMonth"
+                        :key="'td' + d"
+                        class="roller-item"
+                        :class="{ selected: d === toDay }"
+                      >
+                        {{ d }}
+                      </div>
+                      <div class="roller-space"></div>
+                    </div>
+                  </div>
+                  <button class="picker-confirm-btn" @click="confirmToDate">
+                    확인
+                  </button>
+                </div>
+              </transition>
+            </div>
           </div>
         </section>
 
@@ -117,7 +249,7 @@
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue';
+import { reactive, ref, computed, watch, nextTick } from 'vue';
 
 import foodIcon from '@/assets/food.png';
 import publicTransportIcon from '@/assets/public_transport.png';
@@ -228,10 +360,174 @@ function toggleCategory(name) {
 
 function resetFilter() {
   Object.assign(filter, getDefaultFilter());
+  fromYear.value = now.getFullYear();
+  fromMonth.value = now.getMonth() + 1;
+  fromDay.value = 1;
+  toYear.value = now.getFullYear();
+  toMonth.value = now.getMonth() + 1;
+  toDay.value = now.getDate();
+  activePicker.value = null;
 }
 
 function applyFilter() {
   emit('apply', { ...filter });
+}
+
+// ===== 롤러 날짜 피커 =====
+const years = Array.from({ length: 11 }, (_, i) => 2021 + i);
+const ITEM_HEIGHT = 36;
+const activePicker = ref(null);
+
+// From 날짜
+const now = new Date();
+const fromYear = ref(now.getFullYear());
+const fromMonth = ref(now.getMonth() + 1);
+const fromDay = ref(1);
+const fromYearRoller = ref(null);
+const fromMonthRoller = ref(null);
+const fromDayRoller = ref(null);
+const fromDaysInMonth = computed(() =>
+  new Date(fromYear.value, fromMonth.value, 0).getDate()
+);
+
+// To 날짜
+const toYear = ref(now.getFullYear());
+const toMonth = ref(now.getMonth() + 1);
+const toDay = ref(now.getDate());
+const toYearRoller = ref(null);
+const toMonthRoller = ref(null);
+const toDayRoller = ref(null);
+const toDaysInMonth = computed(() =>
+  new Date(toYear.value, toMonth.value, 0).getDate()
+);
+
+// 초기값 파싱
+function parseDateStr(str, fallbackY, fallbackM, fallbackD) {
+  if (str && str.length >= 10) {
+    const parts = str.split('-');
+    return {
+      y: parseInt(parts[0]),
+      m: parseInt(parts[1]),
+      d: parseInt(parts[2]),
+    };
+  }
+  return { y: fallbackY, m: fallbackM, d: fallbackD };
+}
+
+// 초기 filter 값 반영
+const initFrom = parseDateStr(
+  filter.dateFrom,
+  now.getFullYear(),
+  now.getMonth() + 1,
+  1
+);
+fromYear.value = initFrom.y;
+fromMonth.value = initFrom.m;
+fromDay.value = initFrom.d;
+
+const initTo = parseDateStr(
+  filter.dateTo,
+  now.getFullYear(),
+  now.getMonth() + 1,
+  now.getDate()
+);
+toYear.value = initTo.y;
+toMonth.value = initTo.m;
+toDay.value = initTo.d;
+
+// 라벨
+const fromDateLabel = computed(() => {
+  if (!filter.dateFrom) return '시작일';
+  return `${fromYear.value}.${String(fromMonth.value).padStart(
+    2,
+    '0'
+  )}.${String(fromDay.value).padStart(2, '0')}`;
+});
+const toDateLabel = computed(() => {
+  if (!filter.dateTo) return '종료일';
+  return `${toYear.value}.${String(toMonth.value).padStart(2, '0')}.${String(
+    toDay.value
+  ).padStart(2, '0')}`;
+});
+
+// 스크롤 핸들러
+const handleFromYearScroll = (e) => {
+  const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
+  if (years[idx]) fromYear.value = years[idx];
+};
+const handleFromMonthScroll = (e) => {
+  const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
+  if (idx >= 0 && idx < 12) fromMonth.value = idx + 1;
+};
+const handleFromDayScroll = (e) => {
+  const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
+  if (idx >= 0 && idx < fromDaysInMonth.value) fromDay.value = idx + 1;
+};
+const handleToYearScroll = (e) => {
+  const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
+  if (years[idx]) toYear.value = years[idx];
+};
+const handleToMonthScroll = (e) => {
+  const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
+  if (idx >= 0 && idx < 12) toMonth.value = idx + 1;
+};
+const handleToDayScroll = (e) => {
+  const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
+  if (idx >= 0 && idx < toDaysInMonth.value) toDay.value = idx + 1;
+};
+
+// 일수 초과 보정
+watch(fromDaysInMonth, (max) => {
+  if (fromDay.value > max) fromDay.value = max;
+});
+watch(toDaysInMonth, (max) => {
+  if (toDay.value > max) toDay.value = max;
+});
+
+// 롤러 동기화
+async function syncFromRollers() {
+  await nextTick();
+  if (fromYearRoller.value)
+    fromYearRoller.value.scrollTop =
+      years.indexOf(fromYear.value) * ITEM_HEIGHT;
+  if (fromMonthRoller.value)
+    fromMonthRoller.value.scrollTop = (fromMonth.value - 1) * ITEM_HEIGHT;
+  if (fromDayRoller.value)
+    fromDayRoller.value.scrollTop = (fromDay.value - 1) * ITEM_HEIGHT;
+}
+async function syncToRollers() {
+  await nextTick();
+  if (toYearRoller.value)
+    toYearRoller.value.scrollTop = years.indexOf(toYear.value) * ITEM_HEIGHT;
+  if (toMonthRoller.value)
+    toMonthRoller.value.scrollTop = (toMonth.value - 1) * ITEM_HEIGHT;
+  if (toDayRoller.value)
+    toDayRoller.value.scrollTop = (toDay.value - 1) * ITEM_HEIGHT;
+}
+
+function toggleDatePicker(type) {
+  if (activePicker.value === type) {
+    activePicker.value = null;
+  } else {
+    activePicker.value = type;
+    if (type === 'from') syncFromRollers();
+    else syncToRollers();
+  }
+}
+
+function confirmFromDate() {
+  filter.dateFrom = `${fromYear.value}-${String(fromMonth.value).padStart(
+    2,
+    '0'
+  )}-${String(fromDay.value).padStart(2, '0')}`;
+  activePicker.value = null;
+}
+function confirmToDate() {
+  filter.dateTo = `${toYear.value}-${String(toMonth.value).padStart(
+    2,
+    '0'
+  )}-${String(toDay.value).padStart(2, '0')}`;
+  activePicker.value = null;
 }
 </script>
 
@@ -472,5 +768,128 @@ function applyFilter() {
 /* ==== 모달 Close 버튼 ==== */
 .btn-close:focus {
   box-shadow: 0 0 0 0.25rem rgba(255, 188, 0, 0.25);
+}
+
+/* ===== 롤러 날짜 피커 ===== */
+.date-picker-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.date-display {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 0.8rem;
+  color: #333;
+  background: #f5f5f5;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.date-display:hover {
+  border-color: #ffbc00;
+  background: #fff;
+}
+
+.roller-picker-card {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  width: 220px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.roller-container {
+  display: flex;
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.roller-highlight {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 36px;
+  transform: translateY(-50%);
+  background: #fff9eb;
+  border-top: 1px solid #ffbc00;
+  border-bottom: 1px solid #ffbc00;
+}
+
+.roller-column {
+  flex: 1;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  height: 100%;
+  z-index: 1;
+  scrollbar-width: none;
+}
+
+.roller-column::-webkit-scrollbar {
+  display: none;
+}
+
+.roller-item {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #ccc;
+  scroll-snap-align: center;
+}
+
+.roller-item.selected {
+  color: #222;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.roller-space {
+  height: 42px;
+}
+
+.picker-confirm-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  background: #ffbc00;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #fff;
+}
+
+.picker-confirm-btn:hover {
+  background: #ffd24d;
+}
+
+/* 트랜지션 */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translate(-50%, 8px);
+}
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 8px);
 }
 </style>
