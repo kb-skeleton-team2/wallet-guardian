@@ -67,18 +67,18 @@
     <div class="card shadow-sm">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">
-            {{
-              selectedCategory ? `${selectedCategory} 지출 내역` : '지출내역'
-            }}
-          </h5>
-          <button
-            v-if="selectedCategory"
-            class="btn btn-outline-secondary btn-sm"
-            @click="selectedCategory = null"
-          >
-            전체 보기
-          </button>
+          <h5 class="mb-0">거래내역</h5>
+
+          <select class="form-select w-auto" v-model="selectedCategory">
+            <option value="">전체</option>
+            <option
+              v-for="category in availableCategories"
+              :key="category"
+              :value="category"
+            >
+              {{ category }}
+            </option>
+          </select>
         </div>
 
         <ul class="list-group list-group-flush">
@@ -116,7 +116,7 @@ import axios from 'axios';
 import ReportCategoryChart from '@/components/report/ReportCategoryChart.vue';
 
 const transactions = ref([]);
-const selectedCategory = ref(null);
+const selectedCategory = ref('');
 const selectedMonth = ref('');
 
 const fetchTransactions = async () => {
@@ -193,6 +193,14 @@ const expenseByCategory = computed(() => {
   }));
 });
 
+const availableCategories = computed(() => {
+  const categories = filteredTransactions.value
+    .filter((item) => item.type === 'expense')
+    .map((item) => item.category);
+
+  return [...new Set(categories)];
+});
+
 //하단 카테고리별 거래내역
 const displayedTransactions = computed(() => {
   let result = filteredTransactions.value.filter(
@@ -208,10 +216,6 @@ const displayedTransactions = computed(() => {
 
 //차트 조각 클릭 이벤트
 const handleSelectCategory = (category) => {
-  if (selectedCategory.value === category) {
-    selectedCategory.value = null;
-    return;
-  }
   selectedCategory.value = category;
 };
 
