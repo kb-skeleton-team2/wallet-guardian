@@ -1,9 +1,5 @@
 <template>
-  <div
-    v-if="isOpen"
-    class="modal-backdrop"
-    @click.self="handleClose"
-  >
+  <div v-if="isOpen" class="modal-backdrop" @click.self="handleClose">
     <div class="modal-sheet">
       <div class="tab-group">
         <button
@@ -35,11 +31,7 @@
           </span>
         </div>
         <transition name="slide-fade">
-          <div
-            v-if="showDatePicker"
-            class="roller-picker-card"
-            @click.stop
-          >
+          <div v-if="showDatePicker" class="roller-picker-card" @click.stop>
             <div class="roller-container">
               <div class="roller-highlight"></div>
               <div
@@ -91,10 +83,7 @@
                 <div class="roller-space"></div>
               </div>
             </div>
-            <button
-              class="picker-confirm-btn"
-              @click="showDatePicker = false"
-            >
+            <button class="picker-confirm-btn" @click="showDatePicker = false">
               확인
             </button>
           </div>
@@ -127,10 +116,7 @@
             @click="selectedCategory = cat.name"
           >
             <div class="cat-icon-box">
-              <img
-                :src="cat.icon"
-                :alt="cat.name"
-              />
+              <img :src="cat.icon" :alt="cat.name" />
             </div>
             <span class="cat-name">{{ cat.name }}</span>
           </button>
@@ -148,19 +134,10 @@
       </div>
 
       <div class="action-buttons">
-        <button
-          class="btn-save"
-          @click="handleSave"
-          :disabled="isSaving"
-        >
+        <button class="btn-save" @click="handleSave" :disabled="isSaving">
           수정
         </button>
-        <button
-          class="btn-cancel"
-          @click="handleClose"
-        >
-          취소
-        </button>
+        <button class="btn-cancel" @click="handleClose">취소</button>
       </div>
     </div>
   </div>
@@ -169,7 +146,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import axios from 'axios';
-
+import { useCounterStore } from '@/stores/transactions.js';
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
 import allowanceIcon from '@/assets/allowance.png';
 import interestIcon from '@/assets/interest.png';
@@ -184,6 +161,7 @@ import leisureIcon from '@/assets/leisure.png';
 import insuranceIcon from '@/assets/insurance.png';
 import otherExpenseIcon from '@/assets/other_expense.png';
 
+const store = useCounterStore();
 // ── Props / Emits ──
 const props = defineProps({
   isOpen: Boolean,
@@ -303,7 +281,7 @@ const handleSave = async () => {
   isSaving.value = true;
   try {
     const dateStr = `${selectedYear.value}-${String(selectedMonth.value).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
-    await axios.put(
+    const res = await axios.put(
       `http://localhost:3000/transactions/${props.transaction.id}`,
       {
         type: type.value === '지출' ? 'expense' : 'income',
@@ -313,6 +291,7 @@ const handleSave = async () => {
         memo: memo.value,
       },
     );
+    store.modifyTransaction(res);
     emit('saved');
     handleClose();
   } catch (err) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="card p-4" style="border-radius: 20px; width: 48%">
+  <div class="card p-3 p-md-4 w-100 shadow-sm" style="border-radius: 20px">
     <!-- 헤더 -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div class="d-flex align-items-center gap-3">
@@ -35,13 +35,9 @@
         }"
       >
         <div class="day-number">{{ day || '' }}</div>
-
-        <!-- 수입 -->
         <div v-if="day && getDayData(day).income > 0" class="amount income">
           +{{ getDayData(day).income.toLocaleString() }}
         </div>
-
-        <!-- 지출 -->
         <div v-if="day && getDayData(day).expense > 0" class="amount expense">
           -{{ getDayData(day).expense.toLocaleString() }}
         </div>
@@ -128,10 +124,9 @@ function nextMonth() {
   gap: 4px;
 }
 .calendar-cell {
-  padding: 6px 2px;
-  min-height: 70px;
-  font-size: 0.9rem;
-  vertical-align: top;
+  padding: 3px 2px;
+  min-height: 54px; /* 55px → 45px */
+  font-size: 0.75rem;
 }
 .calendar-cell:hover {
   cursor: pointer;
@@ -154,8 +149,8 @@ function nextMonth() {
   margin: 0 auto;
 }
 .amount {
-  font-size: 0.7rem;
-  margin-top: 2px;
+  font-size: 0.8rem;
+  margin-top: 1px;
 }
 .income {
   color: #1976d2;
