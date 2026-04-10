@@ -7,7 +7,7 @@
         v-if="!isEditing"
         class="view-mode"
       >
-        <div class="d-flex align-items-start gap-4">
+        <div class="profile-layout">
           <div class="avatar-circle">
             <img
               :src="userStore.user.avatarUrl"
@@ -15,7 +15,7 @@
               class="w-100 h-100 avatar-img"
             />
           </div>
-          <div class="pt-2">
+          <div class="profile-info">
             <div class="d-flex align-items-center gap-3 mb-3">
               <h4 class="fw-bold mb-0">{{ userStore.user.name }}</h4>
               <button
@@ -40,7 +40,7 @@
         v-else
         class="edit-form"
       >
-        <div class="d-flex align-items-center gap-4 mb-5">
+        <div class="avatar-edit-row">
           <div class="avatar-circle">
             <img
               :src="editForm.avatarUrl"
@@ -164,6 +164,13 @@ const onFileChange = (e) => {
   flex-shrink: 0;
   background-color: #fff;
 }
+
+@media (max-width: 767.98px) {
+  .avatar-circle {
+    width: 90px;
+    height: 90px;
+  }
+}
 .avatar-img {
   object-fit: cover;
 }
@@ -181,6 +188,26 @@ const onFileChange = (e) => {
 }
 .edit-form {
   max-width: 600px;
+  width: 100%;
+}
+@media (max-width: 767.98px) {
+  .edit-form {
+    max-width: 100%;
+  }
+}
+.avatar-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 767.98px) {
+  .avatar-edit-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
 }
 .photo-btn {
   background-color: #ffbc39;
@@ -195,8 +222,48 @@ const onFileChange = (e) => {
   width: 200px;
   padding: 12px 0;
 }
+
 .form-control:focus {
   border-color: #ffbc39;
   box-shadow: 0 0 0 0.25rem rgba(255, 188, 57, 0.25);
+}
+
+/* 반응형 추가코드 */
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.profile-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.profile-info {
+  padding-top: 8px;
+}
+
+@media (max-width: 767.98px) {
+  .mypage-wrapper {
+    padding: 12px;
+    height: auto;
+    min-height: calc(100vh - 60px);
+  }
+  .profile-layout {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  .profile-info {
+    padding-top: 0;
+  }
+  .name-row {
+    justify-content: center;
+  }
 }
 </style>
