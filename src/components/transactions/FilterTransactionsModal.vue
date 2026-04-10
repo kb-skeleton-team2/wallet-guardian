@@ -203,7 +203,10 @@ function getDefaultFilter() {
   };
 }
 
-const filter = reactive({ ...getDefaultFilter(), ...props.initialFilter });
+const filter = reactive({
+  ...getDefaultFilter(),
+  ...JSON.parse(JSON.stringify(props.initialFilter)),
+});
 
 // 분류에 따라 카테고리 필터링
 const filteredCategories = computed(() => {
