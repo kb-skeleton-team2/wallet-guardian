@@ -1,11 +1,10 @@
-<!-- src/components/common/Header.vue -->
 <template>
   <header class="border-bottom bg-white app-header">
     <div class="header-inner px-3">
       <!-- 로고 -->
       <div class="me-auto">
         <RouterLink to="/dashboard" @click="closeMenu">
-          <img src="@/assets/logo.png" alt="로고" class="logo-image" />
+          <img src="@/assets/logo2.png" alt="로고" class="logo-image" />
         </RouterLink>
       </div>
 
@@ -19,17 +18,17 @@
         >
       </nav>
 
-      <!-- 데스크탑 프로필 -->
-      <div class="desktop-profile align-items-center gap-2 ms-3">
+      <!-- 프로필 -->
+      <div class="d-flex align-items-center gap-2 ms-3">
         <RouterLink to="/mypage/:id" class="text-decoration-none username">
-          {{ username }}
+          {{ userStore.user.name }}
         </RouterLink>
-
         <RouterLink to="/mypage/:id">
           <img
-            src="@/assets/profile.png"
+            :src="userStore.user.avatarUrl"
             alt="프로필"
-            class="rounded-circle profile-image"
+            class="rounded-circle"
+            style="width: 50px; height: 50px; object-fit: cover"
           />
         </RouterLink>
       </div>
@@ -92,7 +91,13 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { RouterLink } from 'vue-router';
+import { useUserStore } from '@/stores/user';
 
+const userStore = useUserStore();
+
+onMounted(() => {
+  userStore.fetchUser();
+});
 const username = ref('');
 const menuOpen = ref(false);
 
@@ -122,26 +127,12 @@ watch(menuOpen, (isOpen) => {
   }
 });
 
-onMounted(async () => {
-  window.addEventListener('resize', handleResize);
-  window.addEventListener('keydown', handleKeydown);
-
-  try {
-    const res = await fetch('http://localhost:3000/users/1');
-    const user = await res.json();
-    username.value = user.name;
-  } catch (error) {
-    username.value = '사용자';
-  }
-});
-
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
   window.removeEventListener('keydown', handleKeydown);
   document.body.style.overflow = '';
 });
 </script>
-
 <style scoped>
 .app-header {
   position: relative;
@@ -281,9 +272,7 @@ nav .nav-link.router-link-active,
 
 .mobile-menu-enter-active,
 .mobile-menu-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .mobile-menu-enter-from,
