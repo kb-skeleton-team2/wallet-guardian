@@ -2,100 +2,105 @@
   <div class="filter-overlay" @click.self="$emit('close')">
     <div class="filter-modal">
       <!-- 헤더 -->
-      <div class="d-flex justify-content-between">
-        <h3 class="filter-title">필터</h3>
-        <button
-          type="button"
-          class="btn-close"
-          @click.self="$emit('close')"
-        ></button>
+      <div class="filter-header">
+        <div class="d-flex justify-content-between">
+          <h3 class="filter-title">필터</h3>
+          <button
+            type="button"
+            class="btn-close"
+            @click.self="$emit('close')"
+          ></button>
+        </div>
+        <div class="filter-divider"></div>
       </div>
-      <div class="filter-divider"></div>
 
-      <!-- 분류 -->
-      <section class="filter-section">
-        <h4 class="section-label">분류</h4>
-        <div class="chip-row">
-          <button
-            v-for="opt in typeOptions"
-            :key="opt.value"
-            class="chip"
-            :class="{ active: filter.type === opt.value }"
-            @click="filter.type = opt.value"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
-      </section>
+      <!-- 스크롤 영역 -->
+      <div class="filter-body">
+        <!-- 분류 -->
+        <section class="filter-section">
+          <h4 class="section-label">분류</h4>
+          <div class="chip-row">
+            <button
+              v-for="opt in typeOptions"
+              :key="opt.value"
+              class="chip"
+              :class="{ active: filter.type === opt.value }"
+              @click="filter.type = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </section>
 
-      <!-- 카테고리 -->
-      <section class="filter-section">
-        <h4 class="section-label">카테고리</h4>
-        <div class="category-grid">
-          <button
-            v-for="cat in filteredCategories"
-            :key="cat.name"
-            class="category-item"
-            :class="{ active: filter.categories.includes(cat.name) }"
-            @click="toggleCategory(cat.name)"
-          >
-            <img
-              :src="getCategoryIcon(cat.name)"
-              :alt="cat.name"
-              class="category-icon"
+        <!-- 카테고리 -->
+        <section class="filter-section">
+          <h4 class="section-label">카테고리</h4>
+          <div class="category-grid">
+            <button
+              v-for="cat in filteredCategories"
+              :key="cat.name"
+              class="category-item"
+              :class="{ active: filter.categories.includes(cat.name) }"
+              @click="toggleCategory(cat.name)"
+            >
+              <img
+                :src="getCategoryIcon(cat.name)"
+                :alt="cat.name"
+                class="category-icon"
+              />
+              <span class="category-name">{{ cat.name }}</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 기간 -->
+        <section class="filter-section">
+          <h4 class="section-label">기간</h4>
+          <div class="range-row">
+            <input v-model="filter.dateFrom" type="date" class="range-input" />
+            <span class="range-separator">~</span>
+            <input v-model="filter.dateTo" type="date" class="range-input" />
+          </div>
+        </section>
+
+        <!-- 금액 범위 -->
+        <section class="filter-section">
+          <h4 class="section-label">금액 범위</h4>
+          <div class="range-row">
+            <input
+              v-model.number="filter.amountMin"
+              type="number"
+              class="range-input"
+              placeholder="최소 금액"
+              min="0"
             />
-            <span class="category-name">{{ cat.name }}</span>
-          </button>
-        </div>
-      </section>
+            <span class="range-separator">~</span>
+            <input
+              v-model.number="filter.amountMax"
+              type="number"
+              class="range-input"
+              placeholder="최대 금액"
+              min="0"
+            />
+          </div>
+        </section>
 
-      <!-- 기간 -->
-      <section class="filter-section">
-        <h4 class="section-label">기간</h4>
-        <div class="range-row">
-          <input v-model="filter.dateFrom" type="date" class="range-input" />
-          <span class="range-separator">~</span>
-          <input v-model="filter.dateTo" type="date" class="range-input" />
-        </div>
-      </section>
-
-      <!-- 금액 범위 -->
-      <section class="filter-section">
-        <h4 class="section-label">금액 범위</h4>
-        <div class="range-row">
-          <input
-            v-model.number="filter.amountMin"
-            type="number"
-            class="range-input"
-            placeholder="최소 금액"
-            min="0"
-          />
-          <span class="range-separator">~</span>
-          <input
-            v-model.number="filter.amountMax"
-            type="number"
-            class="range-input"
-            placeholder="최대 금액"
-            min="0"
-          />
-        </div>
-      </section>
-
-      <!-- 정렬 -->
-      <section class="filter-section">
-        <h4 class="section-label">정렬</h4>
-        <div class="chip-row">
-          <button
-            v-for="opt in sortOptions"
-            :key="opt.value"
-            class="chip"
-            :class="{ active: filter.sort === opt.value }"
-            @click="filter.sort = opt.value"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
-      </section>
+        <!-- 정렬 -->
+        <section class="filter-section">
+          <h4 class="section-label">정렬</h4>
+          <div class="chip-row">
+            <button
+              v-for="opt in sortOptions"
+              :key="opt.value"
+              class="chip"
+              :class="{ active: filter.sort === opt.value }"
+              @click="filter.sort = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </section>
+      </div>
 
       <!-- 푸터 버튼 -->
       <div class="filter-footer">
@@ -243,12 +248,25 @@ function applyFilter() {
 .filter-modal {
   background: #fff;
   border-radius: 16px;
-  padding: 20px 24px 18px;
+  padding: 0;
   width: 520px;
   max-width: 94vw;
-  max-height: 86vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+}
+
+.filter-header {
+  padding: 20px 24px 0;
+  flex-shrink: 0;
+}
+
+.filter-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
 }
 
 .filter-title {
@@ -311,7 +329,7 @@ function applyFilter() {
 /* ===== 카테고리 그리드 ===== */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
   gap: 6px;
 }
 
@@ -392,9 +410,10 @@ function applyFilter() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 18px;
-  padding-top: 12px;
+  margin-top: 0;
+  padding: 12px 24px 18px;
   border-top: 1px solid #eee;
+  flex-shrink: 0;
 }
 
 .footer-link {
