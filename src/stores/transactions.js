@@ -68,6 +68,18 @@ export const useTransactionStore = defineStore('transactions', () => {
     transactions.value.push(res.data);
   }
 
+  async function modifyTransaction(res) {
+    const updatedItem = res.data;
+
+    const index = transactions.value.findIndex(
+      (item) => item.id === updatedItem.id,
+    );
+
+    if (index !== -1) {
+      transactions.value.splice(index, 1, updatedItem);
+    }
+  }
+
   // ───────────────────────────────
   // 계산된 값 (Computed)
   // ───────────────────────────────
@@ -111,6 +123,53 @@ export const useTransactionStore = defineStore('transactions', () => {
       .filter((item) => item.date === today && item.type === 'expense')
       .reduce((sum, item) => sum + item.amount, 0);
   });
+
+  // 전월 년/월 계산
+  const lastMonthYear = computed(() => {
+    const now = new Date();
+    return now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  });
+
+  const lastMonthMonth = computed(() => {
+    const now = new Date();
+    return now.getMonth() === 0 ? 12 : now.getMonth(); // getMonth()는 0부터 시작이라 그대로 쓰면 전달
+  });
+
+  // 전월 수입
+  const lastMonthIncome = computed(() => {
+    return transactions.value
+      .filter((item) => {
+        const d = new Date(item.date);
+        return (
+          item.type === 'income' &&
+          d.getFullYear() === lastMonthYear.value &&
+          d.getMonth() + 1 === lastMonthMonth.value
+        );
+      })
+      .reduce((sum, item) => sum + item.amount, 0);
+  });
+
+  // 전월 지출
+  const lastMonthExpense = computed(() => {
+    return transactions.value
+      .filter((item) => {
+        const d = new Date(item.date);
+        return (
+          item.type === 'expense' &&
+          d.getFullYear() === lastMonthYear.value &&
+          d.getMonth() + 1 === lastMonthMonth.value
+        );
+      })
+      .reduce((sum, item) => sum + item.amount, 0);
+  });
+
+  // 전월 대비 수입 차이
+  const incomeGap = computed(() => monthlyIncome.value - lastMonthIncome.value);
+
+  // 전월 대비 지출 차이
+  const expenseGap = computed(
+    () => monthlyExpense.value - lastMonthExpense.value,
+  );
 
   // 최근 거래내역 (id 높은 순 = 최신순)
   const recentTransactions = computed(() =>
@@ -285,6 +344,7 @@ export const useTransactionStore = defineStore('transactions', () => {
     getDayMap,
     selectDate,
     getCategoryIcon,
+    modifyTransaction,
     applyFilter,
     resetFilter,
 
@@ -296,5 +356,7 @@ export const useTransactionStore = defineStore('transactions', () => {
     todayExpense,
     recentTransactions,
     selectedDateTransactions,
+    incomeGap,
+    expenseGap,
   };
 });

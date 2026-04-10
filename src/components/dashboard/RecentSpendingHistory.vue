@@ -1,17 +1,15 @@
 <template>
-  <div class="spending-card">
-    <!-- 선택 날짜 있으면 해당 날짜, 없으면 최근 내역 -->
+  <div class="spending-card shadow-sm">
     <h2 class="title">
       {{ selectedDate ? `${selectedDate} 내역` : '최근 내역' }}
     </h2>
 
-    <!-- 선택 날짜 해제 버튼 -->
     <button
       v-if="selectedDate"
       class="btn btn-sm btn-outline-secondary mb-3"
       @click="store.selectDate(null)"
     >
-      ✕ 최근 내역 보기
+      최근 내역 보기
     </button>
 
     <ul class="spending-list">
@@ -33,20 +31,21 @@
             <span class="date">{{ formatDate(item.date) }}</span>
             <span class="name">{{ item.name }}</span>
           </div>
-
           <div class="row-bottom">
             <span class="category-label">{{ item.category }}</span>
           </div>
         </div>
-        <div class="memo-wrap">
+
+        <!-- 작은 화면에서는 memo 숨김 -->
+        <div class="memo-wrap d-none d-md-flex">
           <span class="memo">{{ item.memo }}</span>
         </div>
+
         <div class="amount" :class="item.type === 'expense' ? 'minus' : 'plus'">
           {{ formatAmount(item.amount, item.type) }}
         </div>
       </li>
 
-      <!-- 해당 날짜에 내역 없을 때 -->
       <li v-if="displayTransactions.length === 0" class="no-data">
         내역이 없습니다.
       </li>
@@ -64,7 +63,6 @@ const { recentTransactions, selectedDate, selectedDateTransactions } =
   storeToRefs(store);
 const getCategoryIcon = store.getCategoryIcon;
 
-// 날짜 선택 여부에 따라 표시할 목록 전환
 const displayTransactions = computed(() =>
   selectedDate.value ? selectedDateTransactions.value : recentTransactions.value
 );
@@ -82,26 +80,29 @@ function formatAmount(amount, type) {
 </script>
 
 <style scoped>
+.spending-card::-webkit-scrollbar {
+  display: none; /* 크롬, 사파리, 엣지 */
+}
 .no-data {
   text-align: center;
   color: #aaa;
   padding: 20px 0;
   font-size: 14px;
 }
-/* 기존 스타일 그대로 유지 */
 .category-icon {
   width: 28px;
   height: 28px;
   object-fit: contain;
 }
 .spending-card {
+  overflow: auto;
+  scrollbar-width: none; /* 파이어폭스 */
   background: #fff;
   border-radius: 16px;
   border: 1px solid #c6c6c6;
   padding: 24px;
-  max-width: 504px;
   width: 100%;
-  max-height: 491px;
+  max-height: 468px;
   overflow: auto;
 }
 .title {
@@ -116,7 +117,6 @@ function formatAmount(amount, type) {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 .spending-item {
   display: flex;
@@ -141,15 +141,17 @@ function formatAmount(amount, type) {
   color: #333;
 }
 .info {
+  flex: 1; /* 남은 공간 차지 */
   display: flex;
   flex-direction: column;
   gap: 3px;
-  width: 74px;
+  min-width: 0; /* 텍스트 넘침 방지 */
 }
 .row-top {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap; /* 작은 화면에서 줄바꿈 */
 }
 .date {
   font-size: 13px;
@@ -160,6 +162,9 @@ function formatAmount(amount, type) {
   font-size: 14px;
   font-weight: 500;
   color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .row-bottom {
   display: flex;
@@ -174,20 +179,49 @@ function formatAmount(amount, type) {
   align-items: center;
   justify-content: center;
   width: 180px;
+  flex-shrink: 0;
 }
 .memo {
   font-size: 13px;
   color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .amount {
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .amount.minus {
   color: #e05555;
 }
 .amount.plus {
   color: #3b82f6;
+}
+
+/* 작은 화면에서 폰트 축소 */
+@media (max-width: 576px) {
+  .spending-card {
+    padding: 16px;
+  }
+  .date {
+    font-size: 11px;
+  }
+  .name {
+    font-size: 12px;
+  }
+  .amount {
+    font-size: 12px;
+  }
+  .icon-wrap {
+    width: 36px;
+    height: 36px;
+  }
+  .category-icon {
+    width: 22px;
+    height: 22px;
+  }
 }
 </style>

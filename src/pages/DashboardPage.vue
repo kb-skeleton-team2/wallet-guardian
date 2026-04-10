@@ -1,16 +1,17 @@
 <template>
   <RecentTransactions></RecentTransactions>
-  <div
-    style="
-      display: flex;
-      justify-content: space-around;
-      width: 86vw;
-      margin: 0 auto;
-    "
-  >
-    <Calendar></Calendar>
-    <RecentSpendingHistory></RecentSpendingHistory>
+
+  <div class="container" style="max-width: 1000px">
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <Calendar></Calendar>
+      </div>
+      <div class="col-12 col-lg-6">
+        <RecentSpendingHistory></RecentSpendingHistory>
+      </div>
+    </div>
   </div>
+
   <img
     class="floating-btn"
     :src="plusModal"
@@ -18,7 +19,7 @@
     style="
       width: 50px;
       height: 50px;
-      position: absolute;
+      position: fixed;
       bottom: 35px;
       right: 59px;
       border-radius: 50%;
