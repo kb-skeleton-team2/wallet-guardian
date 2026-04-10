@@ -146,7 +146,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import axios from 'axios';
-import { useCounterStore } from '@/stores/transactions.js';
+import { useTransactionStore } from '@/stores/transactions.js';
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
 import allowanceIcon from '@/assets/allowance.png';
 import interestIcon from '@/assets/interest.png';
@@ -161,7 +161,7 @@ import leisureIcon from '@/assets/leisure.png';
 import insuranceIcon from '@/assets/insurance.png';
 import otherExpenseIcon from '@/assets/other_expense.png';
 
-const store = useCounterStore();
+const store = useTransactionStore();
 // ── Props / Emits ──
 const props = defineProps({
   isOpen: Boolean,
@@ -189,14 +189,14 @@ const dayRoller = ref(null);
 
 // ── Computed ──
 const daysInMonth = computed(() =>
-  new Date(selectedYear.value, selectedMonth.value, 0).getDate(),
+  new Date(selectedYear.value, selectedMonth.value, 0).getDate()
 );
 
 const formattedDow = computed(() => {
   const d = new Date(
     selectedYear.value,
     selectedMonth.value - 1,
-    selectedDay.value,
+    selectedDay.value
   );
   return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
 });
@@ -218,7 +218,7 @@ const allCategories = [
 ];
 
 const filteredCategories = computed(() =>
-  allCategories.filter((c) => c.group === type.value),
+  allCategories.filter((c) => c.group === type.value)
 );
 
 // ── 롤러 ──
@@ -280,7 +280,9 @@ const handleSave = async () => {
   if (!rawAmount.value || !selectedCategory.value) return;
   isSaving.value = true;
   try {
-    const dateStr = `${selectedYear.value}-${String(selectedMonth.value).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
+    const dateStr = `${selectedYear.value}-${String(
+      selectedMonth.value
+    ).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
     const res = await axios.put(
       `http://localhost:3000/transactions/${props.transaction.id}`,
       {
@@ -289,7 +291,7 @@ const handleSave = async () => {
         category: selectedCategory.value,
         amount: rawAmount.value,
         memo: memo.value,
-      },
+      }
     );
     store.modifyTransaction(res);
     emit('saved');
@@ -320,7 +322,7 @@ watch(
       memo.value = t.memo || '';
       showDatePicker.value = false;
     }
-  },
+  }
 );
 </script>
 
