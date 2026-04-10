@@ -14,26 +14,21 @@
           placeholder="검색"
           @keyup.enter="applySearch"
         />
-        <button
-          class="btn-action btn-search"
-          @click="applySearch"
-        >
-          검색
-        </button>
-        <button
-          class="btn-action btn-filter"
-          @click="toggleFilter"
-        >
+        <button class="btn-action btn-search" @click="applySearch">검색</button>
+        <button class="btn-action btn-filter" @click="toggleFilter">
           필터
         </button>
-        <button
-          class="btn-action btn-add"
-          @click="openAddModal"
-        >
-          + 추가
-        </button>
+        <button class="btn-action btn-add" @click="openAddModal">+ 추가</button>
       </div>
     </div>
+
+    <!-- 필터 모달 -->
+    <FilterTransactionsModal
+      v-if="showFilterModal"
+      :initial-filter="{ ...activeFilter }"
+      @close="showFilterModal = false"
+      @apply="handleFilterApply"
+    />
 
     <!-- 테이블 -->
     <div class="table-area">
@@ -74,10 +69,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="item in paginatedTransactions"
-            :key="item.id"
-          >
+          <tr v-for="item in paginatedTransactions" :key="item.id">
             <td>
               <input
                 type="checkbox"
@@ -119,10 +111,7 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <nav
-      class="pagination-nav"
-      aria-label="페이지 네비게이션"
-    >
+    <nav class="pagination-nav" aria-label="페이지 네비게이션">
       <button
         class="page-btn"
         :disabled="state.currentPage === 1"
@@ -159,6 +148,7 @@
 import { onMounted, reactive, ref, computed } from 'vue';
 import axios from 'axios';
 import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
+import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
 const isModalOpen = ref(false);
 
 // 카테고리 아이콘 매핑 (assets 이미지)
@@ -205,6 +195,17 @@ const state = reactive({
   searchQuery: '',
 });
 
+const showFilterModal = ref(false);
+const activeFilter = reactive({
+  type: 'all',
+  categories: [],
+  dateFrom: '',
+  dateTo: '',
+  amountMin: null,
+  amountMax: null,
+  sort: 'latest',
+});
+
 // 자산 합계
 const totalAsset = computed(() => {
   return state.transactions.reduce((sum, t) => {
@@ -223,9 +224,65 @@ function applySearch() {
 }
 
 function toggleFilter() {
-  // 필터 기능은 추후 구현 가능 (placeholder)
-  console.log('필터 토글');
+  showFilterModal.value = true;
 }
+
+function handleFilterApply(filterData) {
+  Object.assign(activeFilter, filterData);
+  showFilterModal.value = false;
+  state.currentPage = 1;
+  state.selectedIds = [];
+}
+
+// 필터 적용된 거래내역
+const filteredTransactions = computed(() => {
+  let list = [...state.transactions];
+
+  // 분류 필터
+  if (activeFilter.type !== 'all') {
+    list = list.filter((t) => t.type === activeFilter.type);
+  }
+
+  // 카테고리 필터
+  if (activeFilter.categories.length > 0) {
+    list = list.filter((t) => activeFilter.categories.includes(t.category));
+  }
+
+  // 기간 필터
+  if (activeFilter.dateFrom) {
+    list = list.filter((t) => t.date >= activeFilter.dateFrom);
+  }
+  if (activeFilter.dateTo) {
+    list = list.filter((t) => t.date <= activeFilter.dateTo);
+  }
+
+  // 금액 범위 필터
+  if (activeFilter.amountMin != null && activeFilter.amountMin !== '') {
+    list = list.filter((t) => t.amount >= activeFilter.amountMin);
+  }
+  if (activeFilter.amountMax != null && activeFilter.amountMax !== '') {
+    list = list.filter((t) => t.amount <= activeFilter.amountMax);
+  }
+
+  // 정렬
+  switch (activeFilter.sort) {
+    case 'oldest':
+      list.sort((a, b) => a.date.localeCompare(b.date));
+      break;
+    case 'amount_desc':
+      list.sort((a, b) => b.amount - a.amount);
+      break;
+    case 'amount_asc':
+      list.sort((a, b) => a.amount - b.amount);
+      break;
+    case 'latest':
+    default:
+      list.sort((a, b) => b.date.localeCompare(a.date));
+      break;
+  }
+
+  return list;
+});
 
 async function fetchTransactions() {
   try {
@@ -244,8 +301,8 @@ async function deleteTransactionHandler() {
     // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
     await Promise.all(
       state.selectedIds.map((id) =>
-        axios.delete(`${BASE_URL}/transactions/${id}`),
-      ),
+        axios.delete(`${BASE_URL}/transactions/${id}`)
+      )
     );
     // 삭제 후 목록 갱신
     await fetchTransactions();
@@ -261,12 +318,12 @@ async function deleteTransactionHandler() {
 
 // 페이지네이션
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(state.transactions.length / ITEMS_PER_PAGE)),
+  Math.max(1, Math.ceil(filteredTransactions.value.length / ITEMS_PER_PAGE))
 );
 
 const paginatedTransactions = computed(() => {
   const start = (state.currentPage - 1) * ITEMS_PER_PAGE;
-  return state.transactions.slice(start, start + ITEMS_PER_PAGE);
+  return filteredTransactions.value.slice(start, start + ITEMS_PER_PAGE);
 });
 
 function goToPage(page) {
@@ -283,7 +340,7 @@ onMounted(() => {
 const isAllChecked = computed(() => {
   if (paginatedTransactions.value.length === 0) return false;
   return paginatedTransactions.value.every((item) =>
-    state.selectedIds.includes(item.id),
+    state.selectedIds.includes(item.id)
   );
 });
 
