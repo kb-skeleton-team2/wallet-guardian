@@ -5,7 +5,7 @@
       "name": "홍길동",
       "email": "hong@test.com",
       "phone": "010-1234-5678",
-      "profileImage": "이미지 url",
+      "profileImage": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/158.png",
       "createdAt": "2026-04-01"
     }
   ],
@@ -259,15 +259,8 @@
       "amount": 18000,
       "memo": "전시회 입장권",
       "createdAt": "2026-02-08T15:00:00"
-    },
-    {
-      "type": "expense",
-      "date": "2026-04-10",
-      "category": "식비",
-      "amount": 1800,
-      "memo": "컴포즈 커피",
-      "id": "Yx959XLeoAo"
     }
+    
   ],
   "categories": [
     {

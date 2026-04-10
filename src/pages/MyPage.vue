@@ -1,40 +1,42 @@
 <template>
   <div class="mypage-wrapper">
-    <div class="card shadow-sm border-0 rounded-4 p-5 mypage-card">
+    <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mypage-card h-100">
       <h4 class="fw-bold mb-5">Profile</h4>
 
-      <!-- 조회 모드 -->
       <div
         v-if="!isEditing"
-        class="d-flex align-items-start gap-4"
+        class="view-mode"
       >
-        <div class="avatar-circle">
-          <img
-            :src="profile.avatarUrl"
-            alt="프로필 이미지"
-            class="w-100 h-100 avatar-img"
-          />
-        </div>
-
-        <div class="pt-2">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <h4 class="fw-bold mb-0">{{ profile.name }}</h4>
-            <button
-              class="edit-btn"
-              @click="startEdit"
-              title="수정"
-            >
-              <i class="bi bi-pencil-fill"></i>
-            </button>
+        <div class="d-flex align-items-start gap-4">
+          <div class="avatar-circle">
+            <img
+              :src="profile.avatarUrl"
+              alt="프로필 이미지"
+              class="w-100 h-100 avatar-img"
+            />
           </div>
-          <p class="text-secondary small mb-1">이메일 : {{ profile.email }}</p>
-          <p class="text-secondary small mb-0">
-            전화번호 : {{ profile.phone }}
-          </p>
+
+          <div class="pt-2">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <h4 class="fw-bold mb-0">{{ profile.name }}</h4>
+              <button
+                class="edit-btn"
+                @click="startEdit"
+                title="수정"
+              >
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+            </div>
+            <p class="text-secondary small mb-1">
+              이메일 : {{ profile.email }}
+            </p>
+            <p class="text-secondary small mb-0">
+              전화번호 : {{ profile.phone }}
+            </p>
+          </div>
         </div>
       </div>
 
-      <!-- 수정 모드 -->
       <div
         v-else
         class="edit-form"
@@ -68,7 +70,7 @@
             v-model="editForm.name"
             type="text"
             class="form-control py-2 text-secondary"
-            placeholder="Value"
+            placeholder="이름을 입력하세요"
           />
         </div>
 
@@ -78,7 +80,7 @@
             v-model="editForm.email"
             type="email"
             class="form-control py-2 text-secondary"
-            placeholder="Value"
+            placeholder="이메일을 입력하세요"
           />
         </div>
 
@@ -88,11 +90,11 @@
             v-model="editForm.phone"
             type="tel"
             class="form-control py-2 text-secondary"
-            placeholder="Value"
+            placeholder="전화번호를 입력하세요"
           />
         </div>
 
-        <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-start">
           <button
             class="btn save-btn rounded-pill fw-bold"
             @click="saveProfile"
@@ -112,8 +114,6 @@ import { ref, onMounted } from 'vue';
 const DEFAULT_IMAGE =
   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/158.png';
 
-// 리아코 ㅎㅎ
-
 const isEditing = ref(false);
 const fileInput = ref(null);
 
@@ -127,17 +127,21 @@ const profile = ref({
 const editForm = ref({ name: '', email: '', phone: '', avatarUrl: '' });
 
 onMounted(async () => {
-  const res = await axios.get('http://localhost:3000/users/1');
-  const user = res.data;
-  profile.value = {
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    avatarUrl: user.profileImage?.startsWith('data:')
-      ? user.profileImage
-      : DEFAULT_IMAGE,
-    createdAt: user.createdAt,
-  };
+  try {
+    const res = await axios.get('http://localhost:3000/users/1');
+    const user = res.data;
+    profile.value = {
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      avatarUrl: user.profileImage?.startsWith('data:')
+        ? user.profileImage
+        : DEFAULT_IMAGE,
+      createdAt: user.createdAt,
+    };
+  } catch (e) {
+    console.error('데이터 로드 실패:', e);
+  }
 });
 
 const startEdit = () => {
@@ -155,11 +159,11 @@ const saveProfile = async () => {
       profileImage: editForm.value.avatarUrl,
       createdAt: profile.value.createdAt,
     });
+    profile.value = { ...editForm.value };
+    isEditing.value = false;
   } catch (e) {
     console.error('저장 실패:', e);
   }
-  profile.value = { ...editForm.value };
-  isEditing.value = false;
 };
 
 const triggerFileInput = () => fileInput.value.click();
@@ -177,15 +181,17 @@ const onFileChange = (e) => {
 
 <style scoped>
 .mypage-wrapper {
-  padding: 1.5rem;
+  padding: 24px;
   background-color: #f0f0f0;
   height: calc(100vh - 60px);
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .mypage-card {
-  height: 100%;
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .avatar-circle {
@@ -195,6 +201,7 @@ const onFileChange = (e) => {
   overflow: hidden;
   border: 1px solid #dee2e6;
   flex-shrink: 0;
+  background-color: #fff;
 }
 
 .avatar-img {
@@ -205,7 +212,7 @@ const onFileChange = (e) => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #ffbc34;
+  background-color: #ffbc39;
   border: none;
   color: white;
   display: flex;
@@ -215,18 +222,18 @@ const onFileChange = (e) => {
 }
 
 .edit-form {
-  max-width: 600px;
+  max-width: 600px; /* 입력창 너비 제한 */
 }
 
 .photo-btn {
-  background-color: #ffbc34;
+  background-color: #ffbc39;
   border: none;
   color: white;
   font-size: 0.9rem;
 }
 
 .save-btn {
-  background-color: #ffbc34;
+  background-color: #ffbc39;
   border: none;
   color: white;
   width: 200px;
@@ -234,7 +241,7 @@ const onFileChange = (e) => {
 }
 
 .form-control:focus {
-  border-color: #ffbc34;
-  box-shadow: 0 0 0 0.25rem rgba(255, 188, 52, 0.25);
+  border-color: #ffbc39;
+  box-shadow: 0 0 0 0.25rem rgba(255, 188, 57, 0.25);
 }
 </style>

@@ -26,8 +26,8 @@
       <div
         v-for="(day, index) in calendarDays"
         :key="index"
+        @click="handleDayClick(day)"
         class="calendar-cell"
-        @click="console.log(day)"
         :class="{
           'text-danger': day && index % 7 === 0,
           'text-info': day && index % 7 === 6,
@@ -51,27 +51,29 @@
 </template>
 
 <script setup>
-import axios from 'axios';
-import { ref, computed, watch, onMounted } from 'vue';
+import { useCounterStore } from '@/stores/transactions.js';
+import { ref, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 
+const store = useCounterStore();
+const { selectedDate } = storeToRefs(store);
 const now = new Date();
 const year = ref(now.getFullYear());
 const month = ref(now.getMonth() + 1);
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// 거래 데이터를 날짜별로 저장하는 Map
-// 예: { "2026-04-08": { income: 0, expense: 12000 }, ... }
-const dayMap = ref({});
+// store의 getDayMap으로 dayMap 계산
+const dayMap = computed(() => store.getDayMap(year.value, month.value));
 
-// 달력 날짜 배열 계산
+// 달력 날짜 배열
 const calendarDays = computed(() => {
   const firstDay = new Date(year.value, month.value - 1, 1);
   const lastDay = new Date(year.value, month.value, 0);
   const days = [];
 
   for (let i = 0; i < firstDay.getDay(); i++) {
-    days.push(null); // 빈칸
+    days.push(null);
   }
   for (let d = 1; d <= lastDay.getDate(); d++) {
     days.push(d);
@@ -80,44 +82,14 @@ const calendarDays = computed(() => {
   return days;
 });
 
-// 해당 날짜의 수입/지출 반환 (없으면 기본값 반환)
+function handleDayClick(day) {
+  const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  store.selectDate(key);
+}
+
 function getDayData(day) {
   const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   return dayMap.value[key] || { income: 0, expense: 0 };
-}
-
-// API 호출 후 dayMap 구성
-function fetchTransactions() {
-  axios
-    .get('http://localhost:3000/transactions')
-    .then((res) => {
-      const map = {};
-
-      for (let i = 0; i < res.data.length; i++) {
-        const item = res.data[i];
-        const parts = item.date.split('-');
-        const y = Number(parts[0]);
-        const m = Number(parts[1]);
-
-        // 현재 보고 있는 년/월 데이터만 처리
-        if (y !== year.value || m !== month.value) continue;
-
-        if (!map[item.date]) {
-          map[item.date] = { income: 0, expense: 0 };
-        }
-
-        if (item.type === 'income') {
-          map[item.date].income += item.amount;
-        } else if (item.type === 'expense') {
-          map[item.date].expense += item.amount;
-        }
-      }
-
-      dayMap.value = map;
-    })
-    .catch((err) => {
-      console.error('데이터 로딩 실패:', err);
-    });
 }
 
 function isToday(day) {
@@ -146,15 +118,6 @@ function nextMonth() {
     month.value++;
   }
 }
-
-// 월이 바뀔 때마다 API 재호출
-watch([year, month], () => {
-  fetchTransactions();
-});
-
-onMounted(() => {
-  fetchTransactions();
-});
 </script>
 
 <style scoped>
