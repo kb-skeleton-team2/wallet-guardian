@@ -229,7 +229,7 @@ export const useTransactionStore = defineStore('transactions', () => {
     // 정렬
     switch (filter.value.sort) {
       case 'oldest':
-        list.sort((a, b) => a.date.localeCompare(b.date));
+        list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         break;
       case 'amount_desc':
         list.sort((a, b) => b.amount - a.amount);
@@ -239,7 +239,7 @@ export const useTransactionStore = defineStore('transactions', () => {
         break;
       case 'latest':
       default:
-        list.sort((a, b) => b.date.localeCompare(a.date));
+        list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         break;
     }
 
