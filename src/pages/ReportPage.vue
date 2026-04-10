@@ -53,10 +53,14 @@
           </select>
         </div>
 
-        <ReportCategoryChart
-          :expenseByCategory="expenseByCategory"
-          @select-category="handleSelectCategory"
-        />
+        <div class="d-flex justify-content-center">
+          <div style="max-width: 700px; width: 100%">
+            <ReportCategoryChart
+              :expenseByCategory="expenseByCategory"
+              @select-category="handleSelectCategory"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -120,6 +124,7 @@ const fetchTransactions = async () => {
     const response = await axios.get(
       'http://localhost:3000/transactions?userId=1',
     );
+    console.log('report fetch 결과:', response.data);
     transactions.value = response.data;
 
     if (availableMonths.value.length > 0) {
