@@ -5,40 +5,27 @@
       <h1 class="fw-bold fs-2 mt-4 mb-4">거래내역</h1>
       <div class="header-actions">
         <span class="asset-info"
-          >자산 · ₩{{ totalAsset.toLocaleString() }} · 1개월 변동</span
+          >자산 · ₩{{ store.totalAsset.toLocaleString() }} · 1개월 변동</span
         >
         <input
-          v-model="state.searchQuery"
+          v-model="store.searchQuery"
           type="text"
           class="search-input"
           placeholder="검색"
           @keyup.enter="applySearch"
         />
-        <button
-          class="btn-action btn-search"
-          @click="applySearch"
-        >
-          검색
-        </button>
-        <button
-          class="btn-action btn-filter"
-          @click="toggleFilter"
-        >
+        <button class="btn-action btn-search" @click="applySearch">검색</button>
+        <button class="btn-action btn-filter" @click="toggleFilter">
           필터
         </button>
-        <button
-          class="btn-action btn-add"
-          @click="openAddModal"
-        >
-          + 추가
-        </button>
+        <button class="btn-action btn-add" @click="openAddModal">+ 추가</button>
       </div>
     </div>
 
     <!-- 필터 모달 -->
     <FilterTransactionsModal
       v-if="showFilterModal"
-      :initial-filter="{ ...activeFilter }"
+      :initial-filter="{ ...store.filter }"
       @close="showFilterModal = false"
       @apply="handleFilterApply"
     />
@@ -73,14 +60,14 @@
             <th class="btn-actions-header">
               <button
                 class="btn btn-sm btn-outline-dark btn-edit"
-                :disabled="state.selectedIds.length !== 1"
+                :disabled="selectedIds.length !== 1"
                 @click="editTransactionHandler"
               >
                 수정
               </button>
               <button
                 class="btn btn-sm btn-outline-dark btn-delete"
-                :disabled="state.selectedIds.length === 0"
+                :disabled="selectedIds.length === 0"
                 @click="deleteTransactionHandler"
               >
                 삭제
@@ -100,7 +87,7 @@
               <input
                 type="checkbox"
                 class="form-check-input"
-                :checked="state.selectedIds.includes(item.id)"
+                :checked="selectedIds.includes(item.id)"
                 @change="toggleItem(item.id)"
               />
             </td>
@@ -117,7 +104,7 @@
             <td class="text-body-secondary">{{ formatDate(item.date) }}</td>
             <td>
               <img
-                :src="getCategoryIcon(item.category)"
+                :src="store.getCategoryIcon(item.category)"
                 :alt="item.category"
                 class="category-icon me-1"
               />
@@ -137,14 +124,11 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <nav
-      class="pagination-nav"
-      aria-label="페이지 네비게이션"
-    >
+    <nav class="pagination-nav" aria-label="페이지 네비게이션">
       <button
         class="page-btn"
-        :disabled="state.currentPage === 1"
-        @click="goToPage(state.currentPage - 1)"
+        :disabled="currentPage === 1"
+        @click="goToPage(currentPage - 1)"
       >
         &lt;
       </button>
@@ -152,15 +136,15 @@
         v-for="page in totalPages"
         :key="page"
         class="page-btn"
-        :class="{ active: state.currentPage === page }"
+        :class="{ active: currentPage === page }"
         @click="goToPage(page)"
       >
         {{ page }}
       </button>
       <button
         class="page-btn"
-        :disabled="state.currentPage === totalPages"
-        @click="goToPage(state.currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        @click="goToPage(currentPage + 1)"
       >
         &gt;
       </button>
@@ -168,227 +152,102 @@
     <AddTransactionModal
       :isOpen="isModalOpen"
       @close="isModalOpen = false"
-      @saved="fetchTransactions"
+      @saved="isModalOpen = false"
     />
     <ModifyTransactionModal
       :isOpen="isModifyModalOpen"
       :transaction="selectedTransaction"
       @close="isModifyModalOpen = false"
-      @saved="fetchTransactions"
+      @saved="isModifyModalOpen = false"
     />
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, computed } from 'vue';
-import axios from 'axios';
+import { onMounted, ref, computed } from 'vue';
+import { useCounterStore } from '@/stores/transactions';
 import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
 import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
 import ModifyTransactionModal from '@/components/common/ModifyTransactionModal.vue';
+
+const store = useCounterStore();
+
+// ───────────────────────────────
+// UI 전용 로컬 상태
+// ───────────────────────────────
 const isModalOpen = ref(false);
 const isModifyModalOpen = ref(false);
 const selectedTransaction = ref(null);
-
-// 카테고리 아이콘 매핑 (assets 이미지)
-import monthlyIncomeIcon from '@/assets/monthly_income.png';
-import allowanceIcon from '@/assets/allowance.png';
-import interestIcon from '@/assets/interest.png';
-import otherIncomeIcon from '@/assets/other_income.png';
-import foodIcon from '@/assets/food.png';
-import publicTransportIcon from '@/assets/public_transport.png';
-import costOfLivingIcon from '@/assets/cost_of_living.png';
-import shoppingIcon from '@/assets/shopping.png';
-import hospitalIcon from '@/assets/hospital.png';
-import educationIcon from '@/assets/education.png';
-import leisureIcon from '@/assets/leisure.png';
-import insuranceIcon from '@/assets/insurance.png';
-import otherExpenseIcon from '@/assets/other_expense.png';
-
-const categoryIconMap = {
-  월급: monthlyIncomeIcon,
-  용돈: allowanceIcon,
-  이자: interestIcon,
-  기타수입: otherIncomeIcon,
-  식비: foodIcon,
-  교통비: publicTransportIcon,
-  '주거/생활비': costOfLivingIcon,
-  쇼핑: shoppingIcon,
-  의료: hospitalIcon,
-  교육: educationIcon,
-  '여가/문화': leisureIcon,
-  보험: insuranceIcon,
-  기타지출: otherExpenseIcon,
-};
-
-function getCategoryIcon(category) {
-  return categoryIconMap[category] || otherExpenseIcon;
-}
-
-const BASE_URL = 'http://localhost:3000';
-const ITEMS_PER_PAGE = 9;
-const state = reactive({
-  transactions: [],
-  selectedIds: [],
-  currentPage: 1,
-  searchQuery: '',
-});
-
 const showFilterModal = ref(false);
-const activeFilter = reactive({
-  type: 'all',
-  categories: [],
-  dateFrom: '',
-  dateTo: '',
-  amountMin: null,
-  amountMax: null,
-  sort: 'latest',
-});
+const selectedIds = ref([]);
+const currentPage = ref(1);
 
-// 자산 합계
-const totalAsset = computed(() => {
-  return state.transactions.reduce((sum, t) => {
-    return t.type === 'income' ? sum + t.amount : sum - t.amount;
-  }, 0);
-});
+const ITEMS_PER_PAGE = 9;
 
-function openAddModal() {
-  // TODO: 모달 컴포넌트 연결 예정
-  isModalOpen.value = true;
-}
-
+// ───────────────────────────────
+// 검색
+// ───────────────────────────────
 function applySearch() {
-  // 검색 기능은 추후 구현 가능 (placeholder)
-  console.log('검색:', state.searchQuery);
+  currentPage.value = 1;
+  selectedIds.value = [];
 }
 
+// ───────────────────────────────
+// 필터
+// ───────────────────────────────
 function toggleFilter() {
   showFilterModal.value = true;
 }
 
 function handleFilterApply(filterData) {
-  Object.assign(activeFilter, filterData);
+  store.applyFilter(filterData);
   showFilterModal.value = false;
-  state.currentPage = 1;
-  state.selectedIds = [];
+  currentPage.value = 1;
+  selectedIds.value = [];
 }
 
-// 필터 적용된 거래내역
-const filteredTransactions = computed(() => {
-  let list = [...state.transactions];
-
-  // 분류 필터
-  if (activeFilter.type !== 'all') {
-    list = list.filter((t) => t.type === activeFilter.type);
-  }
-
-  // 카테고리 필터
-  if (activeFilter.categories.length > 0) {
-    list = list.filter((t) => activeFilter.categories.includes(t.category));
-  }
-
-  // 기간 필터
-  if (activeFilter.dateFrom) {
-    list = list.filter((t) => t.date >= activeFilter.dateFrom);
-  }
-  if (activeFilter.dateTo) {
-    list = list.filter((t) => t.date <= activeFilter.dateTo);
-  }
-
-  // 금액 범위 필터
-  if (activeFilter.amountMin != null && activeFilter.amountMin !== '') {
-    list = list.filter((t) => t.amount >= activeFilter.amountMin);
-  }
-  if (activeFilter.amountMax != null && activeFilter.amountMax !== '') {
-    list = list.filter((t) => t.amount <= activeFilter.amountMax);
-  }
-
-  // 정렬
-  switch (activeFilter.sort) {
-    case 'oldest':
-      list.sort((a, b) => a.date.localeCompare(b.date));
-      break;
-    case 'amount_desc':
-      list.sort((a, b) => b.amount - a.amount);
-      break;
-    case 'amount_asc':
-      list.sort((a, b) => a.amount - b.amount);
-      break;
-    case 'latest':
-    default:
-      list.sort((a, b) => b.date.localeCompare(a.date));
-      break;
-  }
-
-  return list;
-});
-
-async function fetchTransactions() {
-  try {
-    const { data } = await axios.get(`${BASE_URL}/transactions`);
-    state.transactions = data;
-  } catch (err) {
-    console.log(err);
-  }
+// ───────────────────────────────
+// 모달
+// ───────────────────────────────
+function openAddModal() {
+  isModalOpen.value = true;
 }
 
-async function deleteTransactionHandler() {
-  if (!confirm(`선택한 ${state.selectedIds.length}건을 삭제하시겠습니까?`))
-    return;
-
-  try {
-    // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
-    await Promise.all(
-      state.selectedIds.map((id) =>
-        axios.delete(`${BASE_URL}/transactions/${id}`),
-      ),
-    );
-    // 삭제 후 목록 갱신
-    await fetchTransactions();
-    state.selectedIds = [];
-    // 현재 페이지가 총 페이지를 넘으면 보정
-    if (state.currentPage > totalPages.value) {
-      state.currentPage = totalPages.value;
-    }
-  } catch (err) {
-    alert('삭제 중 오류가 발생했습니다: ' + err.message);
-  }
-}
-
+// ───────────────────────────────
 // 페이지네이션
+// ───────────────────────────────
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredTransactions.value.length / ITEMS_PER_PAGE)),
+  Math.max(1, Math.ceil(store.filteredTransactions.length / ITEMS_PER_PAGE))
 );
 
 const paginatedTransactions = computed(() => {
-  const start = (state.currentPage - 1) * ITEMS_PER_PAGE;
-  return filteredTransactions.value.slice(start, start + ITEMS_PER_PAGE);
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
+  return store.filteredTransactions.slice(start, start + ITEMS_PER_PAGE);
 });
 
 function goToPage(page) {
   if (page < 1 || page > totalPages.value) return;
-  state.currentPage = page;
-  state.selectedIds = [];
+  currentPage.value = page;
+  selectedIds.value = [];
 }
 
-onMounted(() => {
-  fetchTransactions();
-});
-
+// ───────────────────────────────
 // 체크박스 (현재 페이지 기준)
+// ───────────────────────────────
 const isAllChecked = computed(() => {
   if (paginatedTransactions.value.length === 0) return false;
   return paginatedTransactions.value.every((item) =>
-    state.selectedIds.includes(item.id),
+    selectedIds.value.includes(item.id)
   );
 });
 
 function toggleAll() {
   const pageIds = paginatedTransactions.value.map((t) => t.id);
   if (isAllChecked.value) {
-    state.selectedIds = state.selectedIds.filter((id) => !pageIds.includes(id));
+    selectedIds.value = selectedIds.value.filter((id) => !pageIds.includes(id));
   } else {
-    const newIds = pageIds.filter((id) => !state.selectedIds.includes(id));
-    state.selectedIds.push(...newIds);
+    const newIds = pageIds.filter((id) => !selectedIds.value.includes(id));
+    selectedIds.value.push(...newIds);
   }
 }
 
@@ -402,7 +261,6 @@ function onRowMouseDown(e) {
 function onRowClick(id, e) {
   if (e.target.type === 'checkbox') return;
 
-  // 드래그 거리가 5px 이상이면 텍스트 선택으로 간주
   const dx = Math.abs(e.clientX - mouseDownPos.x);
   const dy = Math.abs(e.clientY - mouseDownPos.y);
   if (dx > 5 || dy > 5) return;
@@ -414,23 +272,44 @@ function onRowClick(id, e) {
 }
 
 function toggleItem(id) {
-  const idx = state.selectedIds.indexOf(id);
-  if (idx != -1) {
-    state.selectedIds.splice(idx, 1);
+  const idx = selectedIds.value.indexOf(id);
+  if (idx !== -1) {
+    selectedIds.value.splice(idx, 1);
   } else {
-    state.selectedIds.push(id);
+    selectedIds.value.push(id);
   }
 }
 
+// ───────────────────────────────
+// 수정 / 삭제
+// ───────────────────────────────
 function editTransactionHandler() {
-  if (state.selectedIds.length !== 1) return;
-  const targetId = state.selectedIds[0];
-  const target = state.transactions.find((t) => t.id === targetId);
+  if (selectedIds.value.length !== 1) return;
+  const targetId = selectedIds.value[0];
+  const target = store.transactions.find((t) => t.id === targetId);
   if (!target) return;
   selectedTransaction.value = target;
   isModifyModalOpen.value = true;
 }
 
+async function deleteTransactionHandler() {
+  if (!confirm(`선택한 ${selectedIds.value.length}건을 삭제하시겠습니까?`))
+    return;
+
+  try {
+    await store.deleteTransactions(selectedIds.value);
+    selectedIds.value = [];
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value;
+    }
+  } catch (err) {
+    alert('삭제 중 오류가 발생했습니다: ' + err.message);
+  }
+}
+
+// ───────────────────────────────
+// 포맷 유틸
+// ───────────────────────────────
 function formatDate(dateStr) {
   const [y, m, d] = dateStr.split('-');
   return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
@@ -440,6 +319,13 @@ function formatAmount(item) {
   const sign = item.type === 'expense' ? '-' : '';
   return `${sign}₩${item.amount.toLocaleString()}`;
 }
+
+// ───────────────────────────────
+// 초기 데이터 로드
+// ───────────────────────────────
+onMounted(() => {
+  store.fetchTransactions();
+});
 </script>
 
 <style scoped>
