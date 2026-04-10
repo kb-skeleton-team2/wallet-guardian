@@ -25,6 +25,12 @@
       overflow: hidden;
       transition: all 0.15s ease;
     "
+    @click="isModalOpen = true"
+  />
+  <AddTransactionModal
+    :isOpen="isModalOpen"
+    @close="isModalOpen = false"
+    @saved="() => {}"
   />
 </template>
 <style>
@@ -39,8 +45,11 @@
 }
 </style>
 <script setup>
+import { ref } from 'vue';
+import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
 import plusModal from '@/assets/addModal.png';
 import RecentTransactions from '@/components/RecentTransactions.vue';
 import Calendar from '@/components/Calendar.vue';
 import RecentSpendingHistory from '@/components/RecentSpendingHistory.vue';
+const isModalOpen = ref(false);
 </script>
