@@ -2,61 +2,59 @@
 <template>
   <header class="border-bottom bg-white">
     <div
-      class="d-flex align-items-center px-3"
+      class="d-flex align-items-center px-3 justify-content-between"
       style="height: 60px"
     >
-      <!-- 로고 -->
-      <div class="me-auto">
+      <div class="d-flex align-items-center">
         <RouterLink to="/dashboard">
           <img
-            src="@/assets/logo.png"
+            src="@/assets/logo2.png"
             alt="로고"
-            style="width: 44px; height: 44px; object-fit: contain"
+            class="header-logo"
           />
         </RouterLink>
       </div>
 
-      <!-- 네비게이션 -->
-      <nav class="d-flex align-items-center gap-3">
-        <RouterLink
-          to="/dashboard"
-          class="nav-link px-3"
-          >대시보드</RouterLink
-        >
-        <RouterLink
-          to="/transactions"
-          class="nav-link px-3"
-          >거래</RouterLink
-        >
-        <RouterLink
-          to="/report"
-          class="nav-link px-3"
-          >리포트</RouterLink
-        >
-        <RouterLink
-          to="/mypage/:id"
-          class="nav-link px-3"
-          >마이페이지</RouterLink
-        >
-      </nav>
+      <div class="d-flex align-items-center gap-3">
+        <nav class="d-flex align-items-center gap-3">
+          <RouterLink
+            to="/dashboard"
+            class="nav-link px-3"
+            >대시보드</RouterLink
+          >
+          <RouterLink
+            to="/transactions"
+            class="nav-link px-3"
+            >거래</RouterLink
+          >
+          <RouterLink
+            to="/report"
+            class="nav-link px-3"
+            >리포트</RouterLink
+          >
+          <RouterLink
+            to="/mypage/:id"
+            class="nav-link px-3"
+            >마이페이지</RouterLink
+          >
+        </nav>
 
-      <!-- 프로필 -->
-      <div class="d-flex align-items-center gap-2 ms-3">
-        <RouterLink
-          to="/mypage/:id"
-          class="text-decoration-none username"
-        >
-          {{ username }}
-        </RouterLink>
-
-        <RouterLink to="/mypage/:id">
-          <img
-            src="@/assets/profile.png"
-            alt="프로필"
-            class="rounded-circle"
-            style="width: 50px; height: 50px; object-fit: contain"
-          />
-        </RouterLink>
+        <div class="d-flex align-items-center gap-2 ms-3 border-start ps-3">
+          <RouterLink
+            to="/mypage/:id"
+            class="text-decoration-none username"
+          >
+            {{ username }}
+          </RouterLink>
+          <RouterLink to="/mypage/:id">
+            <img
+              src="@/assets/profile.png"
+              alt="프로필"
+              class="rounded-circle"
+              style="width: 40px; height: 40px; object-fit: cover"
+            />
+          </RouterLink>
+        </div>
       </div>
     </div>
   </header>
@@ -77,6 +75,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.header-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.me-auto {
+  margin-right: 2rem !important;
+}
 .nav-link {
   font-size: 14px;
   color: #374151;
