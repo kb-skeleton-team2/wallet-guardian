@@ -111,169 +111,79 @@
       "createdAt": "2026-04-06T10:00:00"
     },
     {
-      "id": "11",
-      "userId": "1",
-      "date": "2026-03-03",
-      "type": "income",
-      "category": "월급",
-      "amount": 3200000,
-      "memo": "3월 급여",
-      "createdAt": "2026-03-03T09:00:00"
-    },
-    {
-      "id": "12",
-      "userId": "1",
-      "date": "2026-03-04",
       "type": "expense",
-      "category": "주거/생활비",
-      "amount": 500000,
-      "memo": "3월 월세",
-      "createdAt": "2026-03-04T10:00:00"
-    },
-    {
-      "id": "13",
-      "userId": "1",
-      "date": "2026-03-05",
-      "type": "expense",
-      "category": "식비",
-      "amount": 12000,
-      "memo": "점심 식사",
-      "createdAt": "2026-03-05T12:10:00"
-    },
-    {
-      "id": "14",
-      "userId": "1",
-      "date": "2026-03-06",
-      "type": "expense",
-      "category": "교통비",
-      "amount": 2800,
-      "memo": "출퇴근 지하철",
-      "createdAt": "2026-03-06T08:05:00"
-    },
-    {
-      "id": "15",
-      "userId": "1",
-      "date": "2026-03-07",
-      "type": "expense",
+      "date": "2026-04-09",
       "category": "여가/문화",
-      "amount": 15000,
-      "memo": "영화 관람",
-      "createdAt": "2026-03-07T19:20:00"
-    },
-    {
-      "id": "16",
-      "userId": "1",
-      "date": "2026-03-08",
-      "type": "income",
-      "category": "용돈",
-      "amount": 150000,
-      "memo": "부모님 용돈",
-      "createdAt": "2026-03-08T11:00:00"
-    },
-    {
-      "id": "17",
-      "userId": "1",
-      "date": "2026-03-09",
-      "type": "expense",
-      "category": "쇼핑",
-      "amount": 39000,
-      "memo": "생활용품 구매",
-      "createdAt": "2026-03-09T16:30:00"
-    },
-    {
-      "id": "18",
-      "userId": "1",
-      "date": "2026-02-01",
-      "type": "income",
-      "category": "월급",
-      "amount": 3200000,
-      "memo": "5월 급여",
-      "createdAt": "2026-02-01T09:00:00"
-    },
-    {
-      "id": "19",
-      "userId": "1",
-      "date": "2026-02-02",
-      "type": "expense",
-      "category": "주거/생활비",
-      "amount": 520000,
-      "memo": "5월 월세",
-      "createdAt": "2026-02-02T10:00:00"
-    },
-    {
-      "id": "20",
-      "userId": "1",
-      "date": "2026-02-03",
-      "type": "expense",
-      "category": "식비",
-      "amount": 13500,
-      "memo": "점심 김밥",
-      "createdAt": "2026-02-03T12:15:00"
-    },
-    {
-      "id": "21",
-      "userId": "1",
-      "date": "2026-02-04",
-      "type": "expense",
-      "category": "보험",
-      "amount": 85000,
-      "memo": "실비보험 납입",
-      "createdAt": "2026-02-04T10:00:00"
-    },
-    {
-      "id": "22",
-      "userId": "1",
-      "date": "2026-02-05",
-      "type": "expense",
-      "category": "교통비",
-      "amount": 3200,
-      "memo": "버스 환승",
-      "createdAt": "2026-02-05T08:20:00"
-    },
-    {
-      "id": "23",
-      "userId": "1",
-      "date": "2026-02-06",
-      "type": "expense",
-      "category": "쇼핑",
-      "amount": 59000,
-      "memo": "운동화 구매",
-      "createdAt": "2026-02-06T17:40:00"
-    },
-    {
-      "id": "24",
-      "userId": "1",
-      "date": "2026-02-07",
-      "type": "income",
-      "category": "기타수입",
-      "amount": 80000,
-      "memo": "중고거래 수입",
-      "createdAt": "2026-02-07T20:10:00"
-    },
-    {
-      "id": "25",
-      "userId": "1",
-      "date": "2026-02-08",
-      "type": "expense",
-      "category": "여가/문화",
-      "amount": 18000,
-      "memo": "전시회 입장권",
-      "createdAt": "2026-02-08T15:00:00"
+      "amount": 13232,
+      "memo": "추가",
+      "id": "LU4QPaI"
     }
   ],
   "categories": [
-    { "id": "1", "name": "월급", "type": "income" },
-    { "id": "2", "name": "용돈", "type": "income" },
-    { "id": "3", "name": "이자", "type": "income" },
-    { "id": "4", "name": "기타수입", "type": "income" },
-    { "id": "5", "name": "식비", "type": "expense" },
-    { "id": "6", "name": "교통비", "type": "expense" },
-    { "id": "7", "name": "주거/생활비", "type": "expense" },
-    { "id": "8", "name": "쇼핑", "type": "expense" },
-    { "id": "9", "name": "의료", "type": "expense" },
-    { "id": "10", "name": "교육", "type": "expense" },
-    { "id": "11", "name": "여가/문화", "type": "expense" },
-    { "id": "12", "name": "보험", "type": "expense" },
-    { "id": "13", "name": "기타지출", "type": "expense" }
+    {
+      "id": "1",
+      "name": "월급",
+      "type": "income"
+    },
+    {
+      "id": "2",
+      "name": "용돈",
+      "type": "income"
+    },
+    {
+      "id": "3",
+      "name": "이자",
+      "type": "income"
+    },
+    {
+      "id": "4",
+      "name": "기타수입",
+      "type": "income"
+    },
+    {
+      "id": "5",
+      "name": "식비",
+      "type": "expense"
+    },
+    {
+      "id": "6",
+      "name": "교통비",
+      "type": "expense"
+    },
+    {
+      "id": "7",
+      "name": "주거/생활비",
+      "type": "expense"
+    },
+    {
+      "id": "8",
+      "name": "쇼핑",
+      "type": "expense"
+    },
+    {
+      "id": "9",
+      "name": "의료",
+      "type": "expense"
+    },
+    {
+      "id": "10",
+      "name": "교육",
+      "type": "expense"
+    },
+    {
+      "id": "11",
+      "name": "여가/문화",
+      "type": "expense"
+    },
+    {
+      "id": "12",
+      "name": "보험",
+      "type": "expense"
+    },
+    {
+      "id": "13",
+      "name": "기타지출",
+      "type": "expense"
+    }
   ]
 }

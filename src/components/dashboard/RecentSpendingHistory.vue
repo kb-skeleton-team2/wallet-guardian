@@ -1,10 +1,22 @@
 <template>
   <div class="spending-card">
-    <h2 class="title">최근 내역</h2>
+    <!-- 선택 날짜 있으면 해당 날짜, 없으면 최근 내역 -->
+    <h2 class="title">
+      {{ selectedDate ? `${selectedDate} 내역` : '최근 내역' }}
+    </h2>
+
+    <!-- 선택 날짜 해제 버튼 -->
+    <button
+      v-if="selectedDate"
+      class="btn btn-sm btn-outline-secondary mb-3"
+      @click="store.selectDate(null)"
+    >
+      ✕ 최근 내역 보기
+    </button>
 
     <ul class="spending-list">
       <li
-        v-for="item in sortedTransactions"
+        v-for="item in displayTransactions"
         :key="item.id"
         class="spending-item"
       >
@@ -21,44 +33,43 @@
             <span class="date">{{ formatDate(item.date) }}</span>
             <span class="name">{{ item.name }}</span>
           </div>
+
           <div class="row-bottom">
             <span class="category-label">{{ item.category }}</span>
           </div>
         </div>
-
+        <div class="memo-wrap">
+          <span class="memo">{{ item.memo }}</span>
+        </div>
         <div class="amount" :class="item.type === 'expense' ? 'minus' : 'plus'">
           {{ formatAmount(item.amount, item.type) }}
         </div>
+      </li>
+
+      <!-- 해당 날짜에 내역 없을 때 -->
+      <li v-if="displayTransactions.length === 0" class="no-data">
+        내역이 없습니다.
       </li>
     </ul>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import axios from 'axios';
-import allowance from '@/assets/allowance.png';
-import cost_of_living from '@/assets/cost_of_living.png';
-import education from '@/assets/education.png';
-import food from '@/assets/food.png';
-import hospital from '@/assets/hospital.png';
-import insurance from '@/assets/insurance.png';
-import interest from '@/assets/interest.png';
-import leisure from '@/assets/leisure.png';
-import monthly_income from '@/assets/monthly_income.png';
-import other_expense from '@/assets/other_expense.png';
-import other_income from '@/assets/other_income.png';
-import public_transport from '@/assets/public_transport.png';
-import shopping from '@/assets/shopping.png';
-const transactions = ref([]);
+import { computed } from 'vue';
+import { useCounterStore } from '@/stores/transactions.js';
+import { storeToRefs } from 'pinia';
 
-onMounted(() => {
-  axios.get('http://localhost:3000/transactions').then((res) => {
-    transactions.value = [...res.data].sort((a, b) => b.id - a.id);
-  });
-});
+const store = useCounterStore();
+const { recentTransactions, selectedDate, selectedDateTransactions } =
+  storeToRefs(store);
+const getCategoryIcon = store.getCategoryIcon;
 
-const sortedTransactions = computed(() => transactions.value);
+// 날짜 선택 여부에 따라 표시할 목록 전환
+const displayTransactions = computed(() =>
+  selectedDate.value
+    ? selectedDateTransactions.value
+    : recentTransactions.value,
+);
 
 function formatDate(dateStr) {
   const d = new Date(dateStr);
@@ -66,33 +77,20 @@ function formatDate(dateStr) {
 }
 
 function formatAmount(amount, type) {
+  if (amount === undefined || amount === null) return '0원';
   const abs = Math.abs(amount).toLocaleString('ko-KR');
-
   return type === 'expense' ? `-${abs}원` : `${abs}원`;
-}
-
-const categoryImages = {
-  용돈: allowance,
-  월급: monthly_income,
-  이자: interest,
-  기타수입: other_income,
-  식비: food,
-  교통비: public_transport,
-  '여가/문화': leisure,
-  '주거/생활비': cost_of_living,
-  쇼핑: shopping,
-  의료: hospital,
-  교육: education,
-  보험: insurance,
-  기타지출: other_expense,
-};
-
-function getCategoryIcon(category) {
-  return categoryImages[category] || other_expense;
 }
 </script>
 
 <style scoped>
+.no-data {
+  text-align: center;
+  color: #aaa;
+  padding: 20px 0;
+  font-size: 14px;
+}
+/* 기존 스타일 그대로 유지 */
 .category-icon {
   width: 28px;
   height: 28px;
@@ -108,14 +106,12 @@ function getCategoryIcon(category) {
   max-height: 491px;
   overflow: auto;
 }
-
 .title {
   font-size: 17px;
   font-weight: 700;
   color: #111;
   margin-bottom: 20px;
 }
-
 .spending-list {
   list-style: none;
   padding: 0;
@@ -124,7 +120,6 @@ function getCategoryIcon(category) {
   flex-direction: column;
   gap: 0;
 }
-
 .spending-item {
   display: flex;
   align-items: center;
@@ -132,11 +127,9 @@ function getCategoryIcon(category) {
   padding: 14px 0;
   border-bottom: 1px solid #f0f0f0;
 }
-
 .spending-item:last-child {
   border-bottom: none;
 }
-
 .icon-wrap {
   width: 44px;
   height: 44px;
@@ -149,52 +142,53 @@ function getCategoryIcon(category) {
   font-size: 20px;
   color: #333;
 }
-
 .info {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  width: 74px;
 }
-
 .row-top {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-
 .date {
   font-size: 13px;
   color: #888;
   white-space: nowrap;
 }
-
 .name {
   font-size: 14px;
   font-weight: 500;
   color: #111;
 }
-
 .row-bottom {
   display: flex;
   gap: 6px;
 }
-
 .category-label {
   font-size: 12px;
   color: #aaa;
 }
-
+.memo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+}
+.memo {
+  font-size: 13px;
+  color: #555;
+}
 .amount {
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
 }
-
 .amount.minus {
   color: #e05555;
 }
-
 .amount.plus {
   color: #3b82f6;
 }
