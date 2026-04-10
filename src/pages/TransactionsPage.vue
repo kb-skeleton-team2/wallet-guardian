@@ -165,12 +165,12 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue';
-import { useCounterStore } from '@/stores/transactions';
+import { useTransactionStore } from '@/stores/transactions';
 import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
 import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
 import ModifyTransactionModal from '@/components/common/ModifyTransactionModal.vue';
 
-const store = useCounterStore();
+const store = useTransactionStore();
 
 // ───────────────────────────────
 // UI 전용 로컬 상태

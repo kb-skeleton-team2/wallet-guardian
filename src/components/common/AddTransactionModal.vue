@@ -149,7 +149,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import axios from 'axios';
-import { useCounterStore } from '@/stores/transactions.js';
+import { useTransactionStore } from '@/stores/transactions.js';
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
 import allowanceIcon from '@/assets/allowance.png';
 import interestIcon from '@/assets/interest.png';
@@ -164,7 +164,7 @@ import leisureIcon from '@/assets/leisure.png';
 import insuranceIcon from '@/assets/insurance.png';
 import otherExpenseIcon from '@/assets/other_expense.png';
 
-const store = useCounterStore();
+const store = useTransactionStore();
 const props = defineProps({ isOpen: Boolean });
 const emit = defineEmits(['close', 'saved']);
 
@@ -186,13 +186,13 @@ const monthRoller = ref(null);
 const dayRoller = ref(null);
 
 const daysInMonth = computed(() =>
-  new Date(selectedYear.value, selectedMonth.value, 0).getDate(),
+  new Date(selectedYear.value, selectedMonth.value, 0).getDate()
 );
 const formattedDow = computed(() => {
   const d = new Date(
     selectedYear.value,
     selectedMonth.value - 1,
-    selectedDay.value,
+    selectedDay.value
   );
   return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
 });
@@ -254,7 +254,7 @@ const allCategories = [
 ];
 
 const filteredCategories = computed(() =>
-  allCategories.filter((c) => c.group === type.value),
+  allCategories.filter((c) => c.group === type.value)
 );
 
 const onAmountInput = (e) => {
@@ -267,7 +267,9 @@ const handleSave = async () => {
   if (!rawAmount.value || !selectedCategory.value) return;
   isSaving.value = true;
   try {
-    const dateStr = `${selectedYear.value}-${String(selectedMonth.value).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
+    const dateStr = `${selectedYear.value}-${String(
+      selectedMonth.value
+    ).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
     const res = await axios.post('http://localhost:3000/transactions', {
       userId: '1',
       type: type.value === '지출' ? 'expense' : 'income',
@@ -300,7 +302,7 @@ watch(
       rawAmount.value = 0;
       showDatePicker.value = false;
     }
-  },
+  }
 );
 </script>
 

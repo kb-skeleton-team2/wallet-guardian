@@ -56,19 +56,17 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useCounterStore } from '@/stores/transactions.js';
+import { useTransactionStore } from '@/stores/transactions.js';
 import { storeToRefs } from 'pinia';
 
-const store = useCounterStore();
+const store = useTransactionStore();
 const { recentTransactions, selectedDate, selectedDateTransactions } =
   storeToRefs(store);
 const getCategoryIcon = store.getCategoryIcon;
 
 // 날짜 선택 여부에 따라 표시할 목록 전환
 const displayTransactions = computed(() =>
-  selectedDate.value
-    ? selectedDateTransactions.value
-    : recentTransactions.value,
+  selectedDate.value ? selectedDateTransactions.value : recentTransactions.value
 );
 
 function formatDate(dateStr) {

@@ -17,7 +17,7 @@ import shopping from '@/assets/shopping.png';
 
 const BASE_URL = 'http://localhost:3000';
 
-export const useCounterStore = defineStore('transactions', () => {
+export const useTransactionStore = defineStore('transactions', () => {
   // 서버에서 받아온 전체 거래내역
   const transactions = ref([]);
 
