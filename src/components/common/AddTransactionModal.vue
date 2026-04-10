@@ -351,7 +351,7 @@ watch(
   width: 90%;
   max-width: 380px;
   padding: 30px 24px;
-  max-height: 95vh;
+  max-height: 90vh;
   overflow-y: auto;
 }
 .tab-group {
@@ -369,6 +369,7 @@ watch(
   font-weight: 600;
   cursor: pointer;
   color: #444;
+  flex-shrink: 0;
 }
 .tab-btn.active {
   background: #ffbc39;
@@ -474,6 +475,9 @@ watch(
   text-align: center;
   background: transparent;
 }
+.amount-input:focus::placeholder {
+  color: transparent;
+}
 .amount-unit {
   font-size: 26px;
   font-weight: 700;
@@ -490,8 +494,9 @@ watch(
 }
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
   gap: 15px 10px;
+  margin-bottom: 10px;
 }
 .cat-item {
   border: none;
@@ -509,6 +514,7 @@ watch(
   width: 40px;
   height: 40px;
   margin-bottom: 6px;
+  flex-shrink: 0;
 }
 .cat-icon-box img {
   width: 100%;
@@ -520,6 +526,7 @@ watch(
   color: #999;
   text-align: center;
   line-height: 1.2;
+  word-break: keep-all;
 }
 .cat-item.selected .cat-name {
   color: #ffbc39;
@@ -536,7 +543,8 @@ watch(
 }
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  padding-top: 10px;
 }
 .btn-save {
   flex: 1;
