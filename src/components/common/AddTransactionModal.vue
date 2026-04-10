@@ -114,7 +114,6 @@
             :value="displayAmount"
             placeholder="0"
             @input="onAmountInput"
-            @keydown="onAmountKeydown"
           />
           <span class="amount-unit">원</span>
         </div>
@@ -281,20 +280,9 @@ const filteredCategories = computed(() =>
 );
 
 const onAmountInput = (e) => {
-  const digits = e.target.value.replace(/[^0-9]/g, '');
-  rawAmount.value = parseInt(digits || '0', 10);
+  const value = e.target.value.replace(/[^0-9]/g, '');
+  rawAmount.value = value ? parseInt(value, 10) : 0;
   displayAmount.value = rawAmount.value ? rawAmount.value.toLocaleString() : '';
-};
-
-const onAmountKeydown = (e) => {
-  if (e.key === 'Backspace') {
-    e.preventDefault();
-    const newDigits = String(rawAmount.value).slice(0, -1);
-    rawAmount.value = parseInt(newDigits || '0', 10);
-    displayAmount.value = rawAmount.value
-      ? rawAmount.value.toLocaleString()
-      : '';
-  }
 };
 
 const handleSave = async () => {
@@ -475,9 +463,12 @@ watch(
   text-align: center;
   background: transparent;
 }
+
+/* 💡 핵심: 포커스 시 placeholder(0) 숨기기 */
 .amount-input:focus::placeholder {
-  color: transparent;
+  color: transparent !important;
 }
+
 .amount-unit {
   font-size: 26px;
   font-weight: 700;
