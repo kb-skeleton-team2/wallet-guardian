@@ -34,7 +34,6 @@
             {{ formattedDow }}
           </span>
         </div>
-
         <transition name="slide-fade">
           <div
             v-if="showDatePicker"
@@ -43,7 +42,6 @@
           >
             <div class="roller-container">
               <div class="roller-highlight"></div>
-
               <div
                 class="roller-column"
                 ref="yearRoller"
@@ -60,7 +58,6 @@
                 </div>
                 <div class="roller-space"></div>
               </div>
-
               <div
                 class="roller-column"
                 ref="monthRoller"
@@ -77,7 +74,6 @@
                 </div>
                 <div class="roller-space"></div>
               </div>
-
               <div
                 class="roller-column"
                 ref="dayRoller"
@@ -114,6 +110,7 @@
             :value="displayAmount"
             placeholder="0"
             @input="onAmountInput"
+            @keydown="onAmountKeydown"
           />
           <span class="amount-unit">원</span>
         </div>
@@ -156,7 +153,7 @@
           @click="handleSave"
           :disabled="isSaving"
         >
-          저장
+          수정
         </button>
         <button
           class="btn-cancel"
@@ -187,9 +184,14 @@ import leisureIcon from '@/assets/leisure.png';
 import insuranceIcon from '@/assets/insurance.png';
 import otherExpenseIcon from '@/assets/other_expense.png';
 
-const props = defineProps({ isOpen: Boolean });
+// ── Props / Emits ──
+const props = defineProps({
+  isOpen: Boolean,
+  transaction: Object,
+});
 const emit = defineEmits(['close', 'saved']);
 
+// ── 상태 ──
 const type = ref('지출');
 const memo = ref('');
 const selectedCategory = ref('');
@@ -207,9 +209,11 @@ const yearRoller = ref(null);
 const monthRoller = ref(null);
 const dayRoller = ref(null);
 
+// ── Computed ──
 const daysInMonth = computed(() =>
   new Date(selectedYear.value, selectedMonth.value, 0).getDate(),
 );
+
 const formattedDow = computed(() => {
   const d = new Date(
     selectedYear.value,
@@ -219,6 +223,27 @@ const formattedDow = computed(() => {
   return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
 });
 
+const allCategories = [
+  { name: '식비', icon: foodIcon, group: '지출' },
+  { name: '교통비', icon: publicTransportIcon, group: '지출' },
+  { name: '주거/생활비', icon: costOfLivingIcon, group: '지출' },
+  { name: '쇼핑', icon: shoppingIcon, group: '지출' },
+  { name: '의료', icon: hospitalIcon, group: '지출' },
+  { name: '교육', icon: educationIcon, group: '지출' },
+  { name: '여가/문화', icon: leisureIcon, group: '지출' },
+  { name: '보험', icon: insuranceIcon, group: '지출' },
+  { name: '기타지출', icon: otherExpenseIcon, group: '지출' },
+  { name: '월급', icon: monthlyIncomeIcon, group: '수입' },
+  { name: '용돈', icon: allowanceIcon, group: '수입' },
+  { name: '이자', icon: interestIcon, group: '수입' },
+  { name: '기타수입', icon: otherIncomeIcon, group: '수입' },
+];
+
+const filteredCategories = computed(() =>
+  allCategories.filter((c) => c.group === type.value),
+);
+
+// ── 롤러 ──
 const ITEM_HEIGHT = 40;
 
 const handleYearScroll = (e) => {
@@ -248,55 +273,46 @@ const syncRollers = async () => {
 watch(showDatePicker, (val) => {
   if (val) syncRollers();
 });
-
 watch(type, () => {
   selectedCategory.value = '';
 });
-
 watch(daysInMonth, (newMax) => {
-  if (selectedDay.value > newMax) {
-    selectedDay.value = newMax;
-  }
+  if (selectedDay.value > newMax) selectedDay.value = newMax;
 });
 
-const allCategories = [
-  { name: '식비', icon: foodIcon, group: '지출' },
-  { name: '교통비', icon: publicTransportIcon, group: '지출' },
-  { name: '주거/생활비', icon: costOfLivingIcon, group: '지출' },
-  { name: '쇼핑', icon: shoppingIcon, group: '지출' },
-  { name: '의료', icon: hospitalIcon, group: '지출' },
-  { name: '교육', icon: educationIcon, group: '지출' },
-  { name: '여가/문화', icon: leisureIcon, group: '지출' },
-  { name: '보험', icon: insuranceIcon, group: '지출' },
-  { name: '기타지출', icon: otherExpenseIcon, group: '지출' },
-  { name: '월급', icon: monthlyIncomeIcon, group: '수입' },
-  { name: '용돈', icon: allowanceIcon, group: '수입' },
-  { name: '이자', icon: interestIcon, group: '수입' },
-  { name: '기타수입', icon: otherIncomeIcon, group: '수입' },
-];
-
-const filteredCategories = computed(() =>
-  allCategories.filter((c) => c.group === type.value),
-);
-
+// ── 금액 입력 ──
 const onAmountInput = (e) => {
-  const value = e.target.value.replace(/[^0-9]/g, '');
-  rawAmount.value = value ? parseInt(value, 10) : 0;
+  const digits = e.target.value.replace(/[^0-9]/g, '');
+  rawAmount.value = parseInt(digits || '0', 10);
   displayAmount.value = rawAmount.value ? rawAmount.value.toLocaleString() : '';
 };
+const onAmountKeydown = (e) => {
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    const newDigits = String(rawAmount.value).slice(0, -1);
+    rawAmount.value = parseInt(newDigits || '0', 10);
+    displayAmount.value = rawAmount.value
+      ? rawAmount.value.toLocaleString()
+      : '';
+  }
+};
 
+// ── 저장 (PUT) ──
 const handleSave = async () => {
   if (!rawAmount.value || !selectedCategory.value) return;
   isSaving.value = true;
   try {
     const dateStr = `${selectedYear.value}-${String(selectedMonth.value).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
-    await axios.post('http://localhost:3000/transactions', {
-      type: type.value === '지출' ? 'expense' : 'income',
-      date: dateStr,
-      category: selectedCategory.value,
-      amount: rawAmount.value,
-      memo: memo.value,
-    });
+    await axios.put(
+      `http://localhost:3000/transactions/${props.transaction.id}`,
+      {
+        type: type.value === '지출' ? 'expense' : 'income',
+        date: dateStr,
+        category: selectedCategory.value,
+        amount: rawAmount.value,
+        memo: memo.value,
+      },
+    );
     emit('saved');
     handleClose();
   } catch (err) {
@@ -308,21 +324,28 @@ const handleSave = async () => {
 
 const handleClose = () => emit('close');
 
+// ── isOpen 감지 → 기존 데이터로 초기화 ──
 watch(
   () => props.isOpen,
   (val) => {
-    if (val) {
-      type.value = '지출';
-      memo.value = '';
-      selectedCategory.value = '';
-      displayAmount.value = '';
-      rawAmount.value = 0;
+    if (val && props.transaction) {
+      const t = props.transaction;
+      type.value = t.type === 'expense' ? '지출' : '수입';
+      const [y, m, d] = t.date.split('-');
+      selectedYear.value = Number(y);
+      selectedMonth.value = Number(m);
+      selectedDay.value = Number(d);
+      rawAmount.value = t.amount;
+      displayAmount.value = t.amount.toLocaleString();
+      selectedCategory.value = t.category;
+      memo.value = t.memo || '';
       showDatePicker.value = false;
     }
   },
 );
 </script>
 
+<!-- style은 AddTransactionModal.vue와 동일하게 복붙 -->
 <style scoped>
 .modal-backdrop {
   position: fixed;
@@ -339,7 +362,7 @@ watch(
   width: 90%;
   max-width: 380px;
   padding: 30px 24px;
-  max-height: 90vh;
+  max-height: 95vh;
   overflow-y: auto;
 }
 .tab-group {
@@ -357,7 +380,6 @@ watch(
   font-weight: 600;
   cursor: pointer;
   color: #444;
-  flex-shrink: 0;
 }
 .tab-btn.active {
   background: #ffbc39;
@@ -463,12 +485,6 @@ watch(
   text-align: center;
   background: transparent;
 }
-
-/* 💡 핵심: 포커스 시 placeholder(0) 숨기기 */
-.amount-input:focus::placeholder {
-  color: transparent !important;
-}
-
 .amount-unit {
   font-size: 26px;
   font-weight: 700;
@@ -485,9 +501,8 @@ watch(
 }
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 15px 10px;
-  margin-bottom: 10px;
 }
 .cat-item {
   border: none;
@@ -505,7 +520,6 @@ watch(
   width: 40px;
   height: 40px;
   margin-bottom: 6px;
-  flex-shrink: 0;
 }
 .cat-icon-box img {
   width: 100%;
@@ -517,7 +531,6 @@ watch(
   color: #999;
   text-align: center;
   line-height: 1.2;
-  word-break: keep-all;
 }
 .cat-item.selected .cat-name {
   color: #ffbc39;
@@ -534,8 +547,7 @@ watch(
 }
 .action-buttons {
   display: flex;
-  gap: 12px;
-  padding-top: 10px;
+  gap: 10px;
 }
 .btn-save {
   flex: 1;

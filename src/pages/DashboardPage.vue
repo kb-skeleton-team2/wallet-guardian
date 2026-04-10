@@ -25,6 +25,12 @@
       overflow: hidden;
       transition: all 0.15s ease;
     "
+    @click="isModalOpen = true"
+  />
+  <AddTransactionModal
+    :isOpen="isModalOpen"
+    @close="isModalOpen = false"
+    @saved="() => {}"
   />
 </template>
 <style>
@@ -39,8 +45,17 @@
 }
 </style>
 <script setup>
+import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
+import { onMounted, ref } from 'vue';
+import { useCounterStore } from '@/stores/transactions.js';
 import plusModal from '@/assets/addModal.png';
-import RecentTransactions from '@/components/RecentTransactions.vue';
-import Calendar from '@/components/Calendar.vue';
-import RecentSpendingHistory from '@/components/RecentSpendingHistory.vue';
+import RecentTransactions from '@/components/dashboard/RecentTransactions.vue';
+import Calendar from '@/components/dashboard/Calendar.vue';
+import RecentSpendingHistory from '@/components/dashboard/RecentSpendingHistory.vue';
+const isModalOpen = ref(false);
+
+const store = useCounterStore();
+onMounted(() => {
+  store.fetchTransactions();
+});
 </script>

@@ -35,6 +35,14 @@
       </div>
     </div>
 
+    <!-- 필터 모달 -->
+    <FilterTransactionsModal
+      v-if="showFilterModal"
+      :initial-filter="{ ...activeFilter }"
+      @close="showFilterModal = false"
+      @apply="handleFilterApply"
+    />
+
     <!-- 테이블 -->
     <div class="table-area">
       <table class="table table-hover align-middle transactions-table">
@@ -45,7 +53,7 @@
           <col style="width: 20%" />
           <col style="width: 20%" />
           <col style="width: 26%" />
-          <col style="width: 80px" />
+          <col style="width: 110px" />
         </colgroup>
         <thead>
           <tr>
@@ -62,13 +70,20 @@
             <th>카테고리</th>
             <th>금액</th>
             <th>메모</th>
-            <th class="btn-delete-header">
+            <th class="btn-actions-header">
+              <button
+                class="btn btn-sm btn-outline-dark btn-edit"
+                :disabled="state.selectedIds.length !== 1"
+                @click="editTransactionHandler"
+              >
+                수정
+              </button>
               <button
                 class="btn btn-sm btn-outline-dark btn-delete"
                 :disabled="state.selectedIds.length === 0"
                 @click="deleteTransactionHandler"
               >
-                선택삭제
+                삭제
               </button>
             </th>
           </tr>
@@ -77,6 +92,9 @@
           <tr
             v-for="item in paginatedTransactions"
             :key="item.id"
+            class="clickable-row"
+            @mousedown="onRowMouseDown"
+            @click="onRowClick(item.id, $event)"
           >
             <td>
               <input
@@ -152,6 +170,12 @@
       @close="isModalOpen = false"
       @saved="fetchTransactions"
     />
+    <ModifyTransactionModal
+      :isOpen="isModifyModalOpen"
+      :transaction="selectedTransaction"
+      @close="isModifyModalOpen = false"
+      @saved="fetchTransactions"
+    />
   </div>
 </template>
 
@@ -159,7 +183,11 @@
 import { onMounted, reactive, ref, computed } from 'vue';
 import axios from 'axios';
 import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
+import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
+import ModifyTransactionModal from '@/components/common/ModifyTransactionModal.vue';
 const isModalOpen = ref(false);
+const isModifyModalOpen = ref(false);
+const selectedTransaction = ref(null);
 
 // 카테고리 아이콘 매핑 (assets 이미지)
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
@@ -205,6 +233,17 @@ const state = reactive({
   searchQuery: '',
 });
 
+const showFilterModal = ref(false);
+const activeFilter = reactive({
+  type: 'all',
+  categories: [],
+  dateFrom: '',
+  dateTo: '',
+  amountMin: null,
+  amountMax: null,
+  sort: 'latest',
+});
+
 // 자산 합계
 const totalAsset = computed(() => {
   return state.transactions.reduce((sum, t) => {
@@ -223,9 +262,65 @@ function applySearch() {
 }
 
 function toggleFilter() {
-  // 필터 기능은 추후 구현 가능 (placeholder)
-  console.log('필터 토글');
+  showFilterModal.value = true;
 }
+
+function handleFilterApply(filterData) {
+  Object.assign(activeFilter, filterData);
+  showFilterModal.value = false;
+  state.currentPage = 1;
+  state.selectedIds = [];
+}
+
+// 필터 적용된 거래내역
+const filteredTransactions = computed(() => {
+  let list = [...state.transactions];
+
+  // 분류 필터
+  if (activeFilter.type !== 'all') {
+    list = list.filter((t) => t.type === activeFilter.type);
+  }
+
+  // 카테고리 필터
+  if (activeFilter.categories.length > 0) {
+    list = list.filter((t) => activeFilter.categories.includes(t.category));
+  }
+
+  // 기간 필터
+  if (activeFilter.dateFrom) {
+    list = list.filter((t) => t.date >= activeFilter.dateFrom);
+  }
+  if (activeFilter.dateTo) {
+    list = list.filter((t) => t.date <= activeFilter.dateTo);
+  }
+
+  // 금액 범위 필터
+  if (activeFilter.amountMin != null && activeFilter.amountMin !== '') {
+    list = list.filter((t) => t.amount >= activeFilter.amountMin);
+  }
+  if (activeFilter.amountMax != null && activeFilter.amountMax !== '') {
+    list = list.filter((t) => t.amount <= activeFilter.amountMax);
+  }
+
+  // 정렬
+  switch (activeFilter.sort) {
+    case 'oldest':
+      list.sort((a, b) => a.date.localeCompare(b.date));
+      break;
+    case 'amount_desc':
+      list.sort((a, b) => b.amount - a.amount);
+      break;
+    case 'amount_asc':
+      list.sort((a, b) => a.amount - b.amount);
+      break;
+    case 'latest':
+    default:
+      list.sort((a, b) => b.date.localeCompare(a.date));
+      break;
+  }
+
+  return list;
+});
 
 async function fetchTransactions() {
   try {
@@ -261,12 +356,12 @@ async function deleteTransactionHandler() {
 
 // 페이지네이션
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(state.transactions.length / ITEMS_PER_PAGE)),
+  Math.max(1, Math.ceil(filteredTransactions.value.length / ITEMS_PER_PAGE)),
 );
 
 const paginatedTransactions = computed(() => {
   const start = (state.currentPage - 1) * ITEMS_PER_PAGE;
-  return state.transactions.slice(start, start + ITEMS_PER_PAGE);
+  return filteredTransactions.value.slice(start, start + ITEMS_PER_PAGE);
 });
 
 function goToPage(page) {
@@ -297,6 +392,27 @@ function toggleAll() {
   }
 }
 
+// 행 클릭으로 체크박스 토글 (드래그/텍스트 선택 시 무시)
+let mouseDownPos = { x: 0, y: 0 };
+
+function onRowMouseDown(e) {
+  mouseDownPos = { x: e.clientX, y: e.clientY };
+}
+
+function onRowClick(id, e) {
+  if (e.target.type === 'checkbox') return;
+
+  // 드래그 거리가 5px 이상이면 텍스트 선택으로 간주
+  const dx = Math.abs(e.clientX - mouseDownPos.x);
+  const dy = Math.abs(e.clientY - mouseDownPos.y);
+  if (dx > 5 || dy > 5) return;
+
+  const selection = window.getSelection();
+  if (selection && selection.toString().length > 0) return;
+
+  toggleItem(id);
+}
+
 function toggleItem(id) {
   const idx = state.selectedIds.indexOf(id);
   if (idx != -1) {
@@ -304,6 +420,15 @@ function toggleItem(id) {
   } else {
     state.selectedIds.push(id);
   }
+}
+
+function editTransactionHandler() {
+  if (state.selectedIds.length !== 1) return;
+  const targetId = state.selectedIds[0];
+  const target = state.transactions.find((t) => t.id === targetId);
+  if (!target) return;
+  selectedTransaction.value = target;
+  isModifyModalOpen.value = true;
 }
 
 function formatDate(dateStr) {
@@ -377,7 +502,7 @@ function formatAmount(item) {
 .btn-search {
   background-color: #ffbc00;
   border-color: #ffbc00;
-  color: #fff;
+  color: #545045;
 }
 .btn-search:hover {
   background-color: #ffd24d;
@@ -386,7 +511,7 @@ function formatAmount(item) {
 
 .btn-filter {
   background-color: #fff;
-  color: #333;
+  color: #545045;
 }
 .btn-filter:hover {
   background-color: #f5f5f5;
@@ -396,7 +521,7 @@ function formatAmount(item) {
 .btn-add {
   background-color: #ffbc00;
   border-color: #ffbc00;
-  color: #fff;
+  color: #545045;
   border-radius: 20px;
   padding: 0 24px;
 }
@@ -483,14 +608,37 @@ function formatAmount(item) {
   background-color: #fffdf5;
 }
 
+.clickable-row {
+  cursor: pointer;
+}
+
 /* 체크박스 */
 .checkbox-header {
   width: 40px;
 }
 
-/* 선택삭제 버튼 */
-.btn-delete-header {
-  width: 80px;
+/* 선택삭제/수정 버튼 헤더 */
+.btn-actions-header {
+  width: 110px;
+}
+.btn-actions-header button + button {
+  margin-left: 4px;
+}
+.btn-edit {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6d6d6d;
+  border-color: #aeaeae;
+  transition: all 0.2s ease;
+}
+.btn-edit:not(:disabled) {
+  background-color: #ffbc00;
+  border-color: #ffbc00;
+  color: #545045;
+}
+.btn-edit:not(:disabled):hover {
+  background-color: #ffd24d;
+  border-color: #ffd24d;
 }
 .btn-delete {
   font-size: 0.72rem;
@@ -500,13 +648,13 @@ function formatAmount(item) {
   transition: all 0.2s ease;
 }
 .btn-delete:not(:disabled) {
-  background-color: #ffbc00;
-  border-color: #ffbc00;
-  color: #333;
+  background-color: #e06060;
+  border-color: #e06060;
+  color: #fff;
 }
 .btn-delete:not(:disabled):hover {
-  background-color: #ffd24d;
-  border-color: #ffd24d;
+  background-color: #e87c7c;
+  border-color: #e87c7c;
 }
 
 /* 체크박스 KB 스타일 */
@@ -552,7 +700,7 @@ function formatAmount(item) {
 .page-btn.active {
   background: #ffbc00;
   border-color: #ffbc00;
-  color: #fff;
+  color: #545045;
   font-weight: 700;
 }
 
