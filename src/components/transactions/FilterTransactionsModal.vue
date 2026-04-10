@@ -243,54 +243,54 @@ function applyFilter() {
 .filter-modal {
   background: #fff;
   border-radius: 16px;
-  padding: 28px 32px 24px;
+  padding: 20px 24px 18px;
   width: 520px;
   max-width: 94vw;
-  max-height: 88vh;
+  max-height: 86vh;
   overflow-y: auto;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
 }
 
 .filter-title {
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: #222;
-  margin: 0 0 12px;
+  margin: 0 0 8px;
 }
 
 .filter-divider {
   height: 2px;
   background: linear-gradient(90deg, #ffbc00 0%, #ffe08a 100%);
   border-radius: 2px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 /* ===== 섹션 ===== */
 .filter-section {
-  margin-bottom: 22px;
+  margin-bottom: 14px;
 }
 
 .section-label {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #333;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
 }
 
 /* ===== 칩 (분류 / 정렬) ===== */
 .chip-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .chip {
-  height: 36px;
-  padding: 0 20px;
-  border-radius: 20px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 16px;
   border: 1px solid #ddd;
   background: #fff;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #555;
   cursor: pointer;
@@ -311,17 +311,17 @@ function applyFilter() {
 /* ===== 카테고리 그리드 ===== */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+  gap: 6px;
 }
 
 .category-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 10px 4px;
-  border-radius: 12px;
+  gap: 2px;
+  padding: 6px 2px;
+  border-radius: 10px;
   border: 1.5px solid transparent;
   background: #f9f9f9;
   cursor: pointer;
@@ -338,13 +338,13 @@ function applyFilter() {
 }
 
 .category-icon {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
 .category-name {
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   font-weight: 600;
   color: #555;
   text-align: center;
@@ -356,16 +356,16 @@ function applyFilter() {
 .range-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .range-input {
   flex: 1;
-  height: 42px;
+  height: 34px;
   border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 0 14px;
-  font-size: 0.85rem;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 0.8rem;
   color: #333;
   background: #f5f5f5;
   outline: none;
@@ -382,7 +382,7 @@ function applyFilter() {
 }
 
 .range-separator {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: #999;
   flex-shrink: 0;
 }
@@ -392,15 +392,15 @@ function applyFilter() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 28px;
-  padding-top: 18px;
+  margin-top: 18px;
+  padding-top: 12px;
   border-top: 1px solid #eee;
 }
 
 .footer-link {
   background: none;
   border: none;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #888;
   cursor: pointer;
@@ -419,10 +419,10 @@ function applyFilter() {
 }
 
 .btn-modal {
-  height: 42px;
-  padding: 0 28px;
-  border-radius: 10px;
-  font-size: 0.875rem;
+  height: 34px;
+  padding: 0 22px;
+  border-radius: 8px;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   border: none;
