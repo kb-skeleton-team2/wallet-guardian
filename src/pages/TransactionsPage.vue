@@ -136,13 +136,20 @@
         &gt;
       </button>
     </nav>
+    <AddTransactionModal
+      :isOpen="isModalOpen"
+      @close="isModalOpen = false"
+      @saved="fetchTransactions"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, computed, ref } from 'vue';
+import { onMounted, reactive, ref, computed } from 'vue';
 import axios from 'axios';
+import AddTransactionModal from '@/components/common/AddTransactionModal.vue';
 import FilterTransactionsModal from '@/components/transactions/FilterTransactionsModal.vue';
+const isModalOpen = ref(false);
 
 // 카테고리 아이콘 매핑 (assets 이미지)
 import monthlyIncomeIcon from '@/assets/monthly_income.png';
@@ -208,7 +215,7 @@ const totalAsset = computed(() => {
 
 function openAddModal() {
   // TODO: 모달 컴포넌트 연결 예정
-  console.log('거래내역 추가 모달 열기');
+  isModalOpen.value = true;
 }
 
 function applySearch() {
