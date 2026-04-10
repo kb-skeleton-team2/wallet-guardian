@@ -1,4 +1,4 @@
-<!-- src/components/common/Header.vue -->
+vue<!-- src/components/common/Header.vue -->
 <template>
   <header class="border-bottom bg-white">
     <div
@@ -46,15 +46,14 @@
           to="/mypage/:id"
           class="text-decoration-none username"
         >
-          {{ username }}
+          {{ userStore.user.name }}
         </RouterLink>
-
         <RouterLink to="/mypage/:id">
           <img
-            src="@/assets/profile.png"
+            :src="userStore.user.avatarUrl"
             alt="프로필"
             class="rounded-circle"
-            style="width: 50px; height: 50px; object-fit: contain"
+            style="width: 50px; height: 50px; object-fit: cover"
           />
         </RouterLink>
       </div>
@@ -64,18 +63,15 @@
 
 <script setup>
 import { RouterLink } from 'vue-router';
+import { useUserStore } from '@/stores/user';
+import { onMounted } from 'vue';
 
-import { ref, onMounted } from 'vue';
+const userStore = useUserStore();
 
-const username = ref('');
-
-onMounted(async () => {
-  const res = await fetch('http://localhost:3000/users/1');
-  const user = await res.json();
-  username.value = user.name;
+onMounted(() => {
+  userStore.fetchUser();
 });
 </script>
-
 <style scoped>
 .nav-link {
   font-size: 14px;
