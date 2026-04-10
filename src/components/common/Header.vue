@@ -1,51 +1,26 @@
-vue<!-- src/components/common/Header.vue -->
 <template>
   <header class="border-bottom bg-white app-header">
     <div class="header-inner px-3">
       <!-- 로고 -->
       <div class="me-auto">
-        <RouterLink
-          to="/dashboard"
-          @click="closeMenu"
-        >
-          <img
-            src="@/assets/logo.png"
-            alt="로고"
-            class="logo-image"
-          />
+        <RouterLink to="/dashboard" @click="closeMenu">
+          <img src="@/assets/logo2.png" alt="로고" class="logo-image" />
         </RouterLink>
       </div>
 
       <!-- 데스크탑 네비게이션 -->
       <nav class="desktop-nav align-items-center gap-3">
-        <RouterLink
-          to="/dashboard"
-          class="nav-link px-3"
-          >대시보드</RouterLink
-        >
-        <RouterLink
-          to="/transactions"
-          class="nav-link px-3"
-          >거래</RouterLink
-        >
-        <RouterLink
-          to="/report"
-          class="nav-link px-3"
-          >리포트</RouterLink
-        >
-        <RouterLink
-          to="/mypage/:id"
-          class="nav-link px-3"
+        <RouterLink to="/dashboard" class="nav-link px-3">대시보드</RouterLink>
+        <RouterLink to="/transactions" class="nav-link px-3">거래</RouterLink>
+        <RouterLink to="/report" class="nav-link px-3">리포트</RouterLink>
+        <RouterLink to="/mypage/:id" class="nav-link px-3"
           >마이페이지</RouterLink
         >
       </nav>
 
       <!-- 프로필 -->
       <div class="d-flex align-items-center gap-2 ms-3">
-        <RouterLink
-          to="/mypage/:id"
-          class="text-decoration-none username"
-        >
+        <RouterLink to="/mypage/:id" class="text-decoration-none username">
           {{ userStore.user.name }}
         </RouterLink>
         <RouterLink to="/mypage/:id">
@@ -75,10 +50,7 @@ vue<!-- src/components/common/Header.vue -->
 
     <!-- 모바일 메뉴 오버레이 -->
     <transition name="mobile-menu">
-      <div
-        v-if="menuOpen"
-        class="mobile-menu-layer"
-      >
+      <div v-if="menuOpen" class="mobile-menu-layer">
         <button
           type="button"
           class="mobile-menu-backdrop"
@@ -100,10 +72,7 @@ vue<!-- src/components/common/Header.vue -->
               @click="closeMenu"
               >거래</RouterLink
             >
-            <RouterLink
-              to="/report"
-              class="mobile-nav-link"
-              @click="closeMenu"
+            <RouterLink to="/report" class="mobile-nav-link" @click="closeMenu"
               >리포트</RouterLink
             >
             <RouterLink
@@ -123,7 +92,6 @@ vue<!-- src/components/common/Header.vue -->
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-import { onMounted } from 'vue';
 
 const userStore = useUserStore();
 
@@ -304,9 +272,7 @@ nav .nav-link.router-link-active,
 
 .mobile-menu-enter-active,
 .mobile-menu-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .mobile-menu-enter-from,
