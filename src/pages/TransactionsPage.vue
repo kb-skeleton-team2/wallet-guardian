@@ -40,7 +40,7 @@
           <col style="width: 20%" />
           <col style="width: 20%" />
           <col style="width: 26%" />
-          <col style="width: 80px" />
+          <col style="width: 110px" />
         </colgroup>
         <thead>
           <tr>
@@ -57,13 +57,20 @@
             <th>카테고리</th>
             <th>금액</th>
             <th>메모</th>
-            <th class="btn-delete-header">
+            <th class="btn-actions-header">
+              <button
+                class="btn btn-sm btn-outline-dark btn-edit"
+                :disabled="state.selectedIds.length !== 1"
+                @click="editTransactionHandler"
+              >
+                수정
+              </button>
               <button
                 class="btn btn-sm btn-outline-dark btn-delete"
                 :disabled="state.selectedIds.length === 0"
                 @click="deleteTransactionHandler"
               >
-                선택삭제
+                삭제
               </button>
             </th>
           </tr>
@@ -390,6 +397,15 @@ function toggleItem(id) {
   }
 }
 
+function editTransactionHandler() {
+  if (state.selectedIds.length !== 1) return;
+  const targetId = state.selectedIds[0];
+  const target = state.transactions.find((t) => t.id === targetId);
+  if (!target) return;
+  // TODO: 수정 모달 연결 예정
+  console.log('수정 대상:', target);
+}
+
 function formatDate(dateStr) {
   const [y, m, d] = dateStr.split('-');
   return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
@@ -461,7 +477,7 @@ function formatAmount(item) {
 .btn-search {
   background-color: #ffbc00;
   border-color: #ffbc00;
-  color: #fff;
+  color: #545045;
 }
 .btn-search:hover {
   background-color: #ffd24d;
@@ -470,7 +486,7 @@ function formatAmount(item) {
 
 .btn-filter {
   background-color: #fff;
-  color: #333;
+  color: #545045;
 }
 .btn-filter:hover {
   background-color: #f5f5f5;
@@ -480,7 +496,7 @@ function formatAmount(item) {
 .btn-add {
   background-color: #ffbc00;
   border-color: #ffbc00;
-  color: #fff;
+  color: #545045;
   border-radius: 20px;
   padding: 0 24px;
 }
@@ -576,9 +592,28 @@ function formatAmount(item) {
   width: 40px;
 }
 
-/* 선택삭제 버튼 */
-.btn-delete-header {
-  width: 80px;
+/* 선택삭제/수정 버튼 헤더 */
+.btn-actions-header {
+  width: 110px;
+}
+.btn-actions-header button + button {
+  margin-left: 4px;
+}
+.btn-edit {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6d6d6d;
+  border-color: #aeaeae;
+  transition: all 0.2s ease;
+}
+.btn-edit:not(:disabled) {
+  background-color: #ffbc00;
+  border-color: #ffbc00;
+  color: #545045;
+}
+.btn-edit:not(:disabled):hover {
+  background-color: #ffd24d;
+  border-color: #ffd24d;
 }
 .btn-delete {
   font-size: 0.72rem;
@@ -588,13 +623,13 @@ function formatAmount(item) {
   transition: all 0.2s ease;
 }
 .btn-delete:not(:disabled) {
-  background-color: #ffbc00;
-  border-color: #ffbc00;
-  color: #333;
+  background-color: #e06060;
+  border-color: #e06060;
+  color: #fff;
 }
 .btn-delete:not(:disabled):hover {
-  background-color: #ffd24d;
-  border-color: #ffd24d;
+  background-color: #e87c7c;
+  border-color: #e87c7c;
 }
 
 /* 체크박스 KB 스타일 */
@@ -640,7 +675,7 @@ function formatAmount(item) {
 .page-btn.active {
   background: #ffbc00;
   border-color: #ffbc00;
-  color: #fff;
+  color: #545045;
   font-weight: 700;
 }
 
