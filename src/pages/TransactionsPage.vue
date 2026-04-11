@@ -1,8 +1,8 @@
 <template>
-  <div class="container py-4 transactions-page">
+  <div class="container py-2 transactions-page">
     <!-- 헤더 영역: 제목 + 자산 정보 + 검색/필터/추가 -->
     <div class="header-row">
-      <h1 class="fw-bold fs-2 mt-4 mb-4">거래내역</h1>
+      <h1 class="fw-bold fs-2">거래내역</h1>
       <div class="header-actions">
         <span class="asset-info"
           >자산 · ₩{{ store.balance.toLocaleString() }} · 1개월 변동</span
@@ -457,6 +457,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+  margin: 1rem 0 1rem;
 }
 
 .header-actions {
@@ -910,7 +911,7 @@ onBeforeUnmount(() => {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
-    margin-bottom: 18px;
+    margin: 0.25rem 0 0.5rem;
   }
 
   .transactions-page h1 {
