@@ -934,18 +934,24 @@ onBeforeUnmount(() => {
   }
 
   .search-input {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-width: 0;
     width: auto;
+    max-width: 140px;
+    height: 34px;
+    font-size: 0.78rem;
+    padding: 0 10px;
   }
 
   .btn-action {
-    padding: 0 14px;
-    font-size: 0.78rem;
+    flex-shrink: 0;
+    padding: 0 12px;
+    height: 34px;
+    font-size: 0.75rem;
   }
 
   .btn-add {
-    padding: 0 16px;
+    padding: 0 14px;
   }
 
   /* 페이지네이션: 위아래 여백 확대 */
