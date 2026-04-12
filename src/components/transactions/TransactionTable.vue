@@ -411,7 +411,7 @@ watch(
 
 /* 테이블 스타일 */
 .table-area {
-  flex: 1;
+  min-height: min(calc(100vh - 278px), 600px);
 }
 
 .transactions-table {
