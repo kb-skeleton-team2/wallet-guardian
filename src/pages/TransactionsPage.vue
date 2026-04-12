@@ -440,6 +440,7 @@ onBeforeUnmount(() => {
   if (mobileMediaQuery) {
     mobileMediaQuery.removeEventListener('change', updateIsMobile);
   }
+  store.resetFilter();
 });
 </script>
 
