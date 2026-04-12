@@ -15,7 +15,7 @@ import other_income from '@/assets/other_income.png';
 import public_transport from '@/assets/public_transport.png';
 import shopping from '@/assets/shopping.png';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const useTransactionStore = defineStore('transactions', () => {
   // 서버에서 받아온 전체 거래내역
@@ -72,7 +72,7 @@ export const useTransactionStore = defineStore('transactions', () => {
     const updatedItem = res.data;
 
     const index = transactions.value.findIndex(
-      (item) => item.id === updatedItem.id,
+      (item) => item.id === updatedItem.id
     );
 
     if (index !== -1) {
@@ -168,7 +168,7 @@ export const useTransactionStore = defineStore('transactions', () => {
 
   // 전월 대비 지출 차이
   const expenseGap = computed(
-    () => monthlyExpense.value - lastMonthExpense.value,
+    () => monthlyExpense.value - lastMonthExpense.value
   );
 
   // 최근 거래내역 (id 높은 순 = 최신순)

@@ -164,6 +164,7 @@ import leisureIcon from '@/assets/leisure.png';
 import insuranceIcon from '@/assets/insurance.png';
 import otherExpenseIcon from '@/assets/other_expense.png';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const store = useTransactionStore();
 const props = defineProps({ isOpen: Boolean });
 const emit = defineEmits(['close', 'saved']);
@@ -270,7 +271,7 @@ const handleSave = async () => {
     const dateStr = `${selectedYear.value}-${String(
       selectedMonth.value
     ).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
-    const res = await axios.post('http://localhost:3000/transactions', {
+    const res = await axios.post(`${BASE_URL}/transactions`, {
       userId: '1',
       type: type.value === '지출' ? 'expense' : 'income',
       date: dateStr,

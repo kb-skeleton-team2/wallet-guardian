@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const DEFAULT_IMAGE =
   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/158.png';
 
@@ -18,7 +20,7 @@ export const useUserStore = defineStore('user', () => {
   async function fetchUser() {
     if (user.value.id) return; // 이미 불러왔으면 스킵
     try {
-      const res = await axios.get('http://localhost:3000/users/1');
+      const res = await axios.get(`${BASE_URL}/users/1`);
       const u = res.data;
       user.value = {
         id: u.id,
@@ -37,7 +39,7 @@ export const useUserStore = defineStore('user', () => {
 
   async function updateUser(form) {
     try {
-      await axios.put('http://localhost:3000/users/1', {
+      await axios.put(`${BASE_URL}/users/1`, {
         id: '1',
         name: form.name,
         email: form.email,
