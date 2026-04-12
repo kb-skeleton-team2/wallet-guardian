@@ -15,7 +15,7 @@ import other_income from '@/assets/other_income.png';
 import public_transport from '@/assets/public_transport.png';
 import shopping from '@/assets/shopping.png';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const useTransactionStore = defineStore('transactions', () => {
   const transactions = ref([]);
@@ -60,7 +60,7 @@ export const useTransactionStore = defineStore('transactions', () => {
 
   async function modifyTransaction(updatedItem) {
     const index = transactions.value.findIndex(
-      (item) => item.id === updatedItem.id,
+      (item) => item.id === updatedItem.id
     );
     if (index !== -1) {
       transactions.value.splice(index, 1, updatedItem);
@@ -146,7 +146,7 @@ export const useTransactionStore = defineStore('transactions', () => {
 
   const incomeGap = computed(() => monthlyIncome.value - lastMonthIncome.value);
   const expenseGap = computed(
-    () => monthlyExpense.value - lastMonthExpense.value,
+    () => monthlyExpense.value - lastMonthExpense.value
   );
 
   const recentTransactions = computed(() =>
