@@ -189,14 +189,14 @@ const dayRoller = ref(null);
 
 // ── Computed ──
 const daysInMonth = computed(() =>
-  new Date(selectedYear.value, selectedMonth.value, 0).getDate()
+  new Date(selectedYear.value, selectedMonth.value, 0).getDate(),
 );
 
 const formattedDow = computed(() => {
   const d = new Date(
     selectedYear.value,
     selectedMonth.value - 1,
-    selectedDay.value
+    selectedDay.value,
   );
   return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
 });
@@ -218,7 +218,7 @@ const allCategories = [
 ];
 
 const filteredCategories = computed(() =>
-  allCategories.filter((c) => c.group === type.value)
+  allCategories.filter((c) => c.group === type.value),
 );
 
 // ── 롤러 ──
@@ -281,19 +281,22 @@ const handleSave = async () => {
   isSaving.value = true;
   try {
     const dateStr = `${selectedYear.value}-${String(
-      selectedMonth.value
+      selectedMonth.value,
     ).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
+    const isoDateStr = `${dateStr}T09:00:00`;
     const res = await axios.put(
       `http://localhost:3000/transactions/${props.transaction.id}`,
       {
+        userId: '1',
         type: type.value === '지출' ? 'expense' : 'income',
         date: dateStr,
         category: selectedCategory.value,
         amount: rawAmount.value,
         memo: memo.value,
-      }
+        createdAt: new Date().toISOString(),
+      },
     );
-    store.modifyTransaction(res);
+    store.modifyTransaction(res.data);
     emit('saved');
     handleClose();
   } catch (err) {
@@ -322,7 +325,7 @@ watch(
       memo.value = t.memo || '';
       showDatePicker.value = false;
     }
-  }
+  },
 );
 </script>
 

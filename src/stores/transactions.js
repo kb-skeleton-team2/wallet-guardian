@@ -18,10 +18,7 @@ import shopping from '@/assets/shopping.png';
 const BASE_URL = 'http://localhost:3000';
 
 export const useTransactionStore = defineStore('transactions', () => {
-  // 서버에서 받아온 전체 거래내역
   const transactions = ref([]);
-
-  // 달력에서 클릭한 날짜 (예: "2026-04-10")
   const selectedDate = ref(null);
 
   const categoryImages = {
@@ -49,32 +46,22 @@ export const useTransactionStore = defineStore('transactions', () => {
   // ───────────────────────────────
 
   async function fetchTransactions() {
-    // 이미 데이터가 있으면 다시 불러오지 않음
     if (transactions.value.length > 0) return;
-
     const res = await axios.get(`${BASE_URL}/transactions`);
-
-    // amount가 숫자인 데이터만 저장 (이상한 데이터 방어)
     transactions.value = res.data.filter(
-      (item) => item.amount !== undefined && !isNaN(item.amount)
+      (item) => item.amount !== undefined && !isNaN(item.amount),
     );
   }
 
   async function addTransaction(newItem) {
-    // 1. 서버에 저장
     const res = await axios.post(`${BASE_URL}/transactions`, newItem);
-
-    // 2. pinia에도 직접 추가 (서버 재요청 없이)
     transactions.value.push(res.data);
   }
 
-  async function modifyTransaction(res) {
-    const updatedItem = res.data;
-
+  async function modifyTransaction(updatedItem) {
     const index = transactions.value.findIndex(
       (item) => item.id === updatedItem.id,
     );
-
     if (index !== -1) {
       transactions.value.splice(index, 1, updatedItem);
     }
@@ -84,47 +71,43 @@ export const useTransactionStore = defineStore('transactions', () => {
   // 계산된 값 (Computed)
   // ───────────────────────────────
 
-  // 이번달 수입 합계
   const monthlyIncome = computed(() => {
     const now = new Date();
-
     return transactions.value
       .filter((item) => {
         const d = new Date(item.date);
-        const isSameYear = d.getFullYear() === now.getFullYear();
-        const isSameMonth = d.getMonth() === now.getMonth();
-        return item.type === 'income' && isSameYear && isSameMonth;
+        return (
+          item.type === 'income' &&
+          d.getFullYear() === now.getFullYear() &&
+          d.getMonth() === now.getMonth()
+        );
       })
       .reduce((sum, item) => sum + item.amount, 0);
   });
 
-  // 이번달 지출 합계
   const monthlyExpense = computed(() => {
     const now = new Date();
-
     return transactions.value
       .filter((item) => {
         const d = new Date(item.date);
-        const isSameYear = d.getFullYear() === now.getFullYear();
-        const isSameMonth = d.getMonth() === now.getMonth();
-        return item.type === 'expense' && isSameYear && isSameMonth;
+        return (
+          item.type === 'expense' &&
+          d.getFullYear() === now.getFullYear() &&
+          d.getMonth() === now.getMonth()
+        );
       })
       .reduce((sum, item) => sum + item.amount, 0);
   });
 
-  // 잔액 = 이번달 수입 - 이번달 지출
   const balance = computed(() => monthlyIncome.value - monthlyExpense.value);
 
-  // 오늘 지출 합계
   const todayExpense = computed(() => {
     const today = new Date().toISOString().slice(0, 10); // "2026-04-10" 형식
-
     return transactions.value
       .filter((item) => item.date === today && item.type === 'expense')
       .reduce((sum, item) => sum + item.amount, 0);
   });
 
-  // 전월 년/월 계산
   const lastMonthYear = computed(() => {
     const now = new Date();
     return now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
@@ -135,7 +118,6 @@ export const useTransactionStore = defineStore('transactions', () => {
     return now.getMonth() === 0 ? 12 : now.getMonth(); // getMonth()는 0부터 시작이라 그대로 쓰면 전달
   });
 
-  // 전월 수입
   const lastMonthIncome = computed(() => {
     return transactions.value
       .filter((item) => {
@@ -149,7 +131,6 @@ export const useTransactionStore = defineStore('transactions', () => {
       .reduce((sum, item) => sum + item.amount, 0);
   });
 
-  // 전월 지출
   const lastMonthExpense = computed(() => {
     return transactions.value
       .filter((item) => {
@@ -163,27 +144,23 @@ export const useTransactionStore = defineStore('transactions', () => {
       .reduce((sum, item) => sum + item.amount, 0);
   });
 
-  // 전월 대비 수입 차이
   const incomeGap = computed(() => monthlyIncome.value - lastMonthIncome.value);
-
-  // 전월 대비 지출 차이
   const expenseGap = computed(
     () => monthlyExpense.value - lastMonthExpense.value,
   );
 
-  // 최근 거래내역 (id 높은 순 = 최신순)
   const recentTransactions = computed(() =>
-    [...transactions.value].sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    )
+    [...transactions.value].sort((a, b) => {
+      const dateDiff = new Date(b.date) - new Date(a.date);
+      if (dateDiff !== 0) return dateDiff;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    }),
   );
 
-  // 달력에서 선택한 날짜의 거래내역
   const selectedDateTransactions = computed(() => {
     if (!selectedDate.value) return [];
-
     return transactions.value.filter(
-      (item) => item.date === selectedDate.value
+      (item) => item.date === selectedDate.value,
     );
   });
 
@@ -195,24 +172,19 @@ export const useTransactionStore = defineStore('transactions', () => {
     const map = {};
     for (const item of transactions.value) {
       const [y, m] = item.date.split('-').map(Number);
-
       if (y !== year || m !== month) continue;
-
       if (!map[item.date]) {
         map[item.date] = { income: 0, expense: 0 };
       }
-
       if (item.type === 'income') {
         map[item.date].income += item.amount;
       } else if (item.type === 'expense') {
         map[item.date].expense += item.amount;
       }
     }
-
     return map;
   }
 
-  // 달력에서 날짜 클릭 시 호출
   function selectDate(dateStr) {
     selectedDate.value = dateStr;
   }
@@ -221,7 +193,6 @@ export const useTransactionStore = defineStore('transactions', () => {
   // 거래내역 페이지용 상태
   // ───────────────────────────────
 
-  // 필터
   const filter = ref({
     type: 'all',
     categories: [],
@@ -232,7 +203,6 @@ export const useTransactionStore = defineStore('transactions', () => {
     sort: 'latest',
   });
 
-  // 검색
   const searchQuery = ref('');
 
   // ───────────────────────────────
@@ -242,27 +212,23 @@ export const useTransactionStore = defineStore('transactions', () => {
   const filteredTransactions = computed(() => {
     let list = [...transactions.value];
 
-    // 검색어 필터
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.trim().toLowerCase();
       list = list.filter(
         (t) =>
           t.category.toLowerCase().includes(q) ||
-          (t.memo && t.memo.toLowerCase().includes(q))
+          (t.memo && t.memo.toLowerCase().includes(q)),
       );
     }
 
-    // 분류 필터
     if (filter.value.type !== 'all') {
       list = list.filter((t) => t.type === filter.value.type);
     }
 
-    // 카테고리 필터
     if (filter.value.categories.length > 0) {
       list = list.filter((t) => filter.value.categories.includes(t.category));
     }
 
-    // 기간 필터
     if (filter.value.dateFrom) {
       list = list.filter((t) => t.date >= filter.value.dateFrom);
     }
@@ -270,7 +236,6 @@ export const useTransactionStore = defineStore('transactions', () => {
       list = list.filter((t) => t.date <= filter.value.dateTo);
     }
 
-    // 금액 범위 필터
     if (filter.value.amountMin != null && filter.value.amountMin !== '') {
       list = list.filter((t) => t.amount >= filter.value.amountMin);
     }
@@ -281,7 +246,11 @@ export const useTransactionStore = defineStore('transactions', () => {
     // 정렬
     switch (filter.value.sort) {
       case 'oldest':
-        list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        list.sort((a, b) => {
+          const dateDiff = new Date(a.date) - new Date(b.date);
+          if (dateDiff !== 0) return dateDiff;
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        });
         break;
       case 'amount_desc':
         list.sort((a, b) => b.amount - a.amount);
@@ -291,7 +260,11 @@ export const useTransactionStore = defineStore('transactions', () => {
         break;
       case 'latest':
       default:
-        list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        list.sort((a, b) => {
+          const dateDiff = new Date(b.date) - new Date(a.date);
+          if (dateDiff !== 0) return dateDiff;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
         break;
     }
 
@@ -302,21 +275,17 @@ export const useTransactionStore = defineStore('transactions', () => {
   // 거래내역 페이지용 함수
   // ───────────────────────────────
 
-  // 거래내역 삭제
   async function deleteTransactions(ids) {
-    // json-server는 개별 DELETE만 지원하므로 Promise.all로 처리
     await Promise.all(
-      ids.map((id) => axios.delete(`${BASE_URL}/transactions/${id}`))
+      ids.map((id) => axios.delete(`${BASE_URL}/transactions/${id}`)),
     );
     transactions.value = transactions.value.filter((t) => !ids.includes(t.id));
   }
 
-  // 필터 적용
   function applyFilter(filterData) {
     Object.assign(filter.value, filterData);
   }
 
-  // 필터 초기화
   function resetFilter() {
     filter.value = {
       type: 'all',
@@ -331,13 +300,10 @@ export const useTransactionStore = defineStore('transactions', () => {
   }
 
   return {
-    // 상태
     transactions,
     selectedDate,
     filter,
     searchQuery,
-
-    // 함수
     fetchTransactions,
     addTransaction,
     deleteTransactions,
@@ -347,8 +313,6 @@ export const useTransactionStore = defineStore('transactions', () => {
     modifyTransaction,
     applyFilter,
     resetFilter,
-
-    // 계산된 값
     filteredTransactions,
     monthlyIncome,
     monthlyExpense,
