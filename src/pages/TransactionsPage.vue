@@ -153,7 +153,7 @@ onBeforeUnmount(() => {
   transition: border-color 0.2s;
 }
 .search-input:focus {
-  border-color: #ffbc00;
+  border-color: var(--color-primary);
 }
 
 .btn-action {
@@ -169,18 +169,18 @@ onBeforeUnmount(() => {
 }
 
 .btn-search {
-  background-color: #ffbc00;
-  border-color: #ffbc00;
-  color: #545045;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 .btn-search:hover {
-  background-color: #ffd24d;
-  border-color: #ffd24d;
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .btn-filter {
   background-color: #fff;
-  color: #545045;
+  color: var(--color-primary-text);
 }
 .btn-filter:hover {
   background-color: #f5f5f5;
@@ -188,15 +188,15 @@ onBeforeUnmount(() => {
 }
 
 .btn-add {
-  background-color: #ffbc00;
-  border-color: #ffbc00;
-  color: #545045;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
   border-radius: 20px;
   padding: 0 24px;
 }
 .btn-add:hover {
-  background-color: #ffd24d;
-  border-color: #ffd24d;
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 /* ===== 반응형: 헤더 영역 ===== */

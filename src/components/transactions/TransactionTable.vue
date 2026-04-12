@@ -385,29 +385,28 @@ watch(
 }
 
 /* 분류 뱃지 */
-.badge-expense {
-  background-color: #ffe5e5;
-  color: #e74c3c;
+.badge-expense,
+.badge-income {
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.35em 0.85em;
   border-radius: 4px;
+}
+.badge-expense {
+  background-color: var(--color-expense-bg);
+  color: var(--color-expense);
 }
 .badge-income {
-  background-color: #e5ffe5;
-  color: #2ecc71;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.35em 0.85em;
-  border-radius: 4px;
+  background-color: var(--color-income-bg);
+  color: var(--color-income);
 }
 
-/* 색상 */
+/* 금액 색상 */
 .text-expense {
-  color: #e74c3c;
+  color: var(--color-expense);
 }
 .text-income {
-  color: #2ecc71;
+  color: var(--color-income);
 }
 
 /* 테이블 스타일 */
@@ -469,29 +468,8 @@ watch(
   width: 40px;
 }
 
-/* 선택삭제/수정 버튼 헤더 */
-.btn-actions-header {
-  width: 110px;
-}
-.btn-actions-header button + button {
-  margin-left: 4px;
-}
-.btn-edit {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #6d6d6d;
-  border-color: #aeaeae;
-  transition: all 0.2s ease;
-}
-.btn-edit:not(:disabled) {
-  background-color: #ffbc00;
-  border-color: #ffbc00;
-  color: #545045;
-}
-.btn-edit:not(:disabled):hover {
-  background-color: #ffd24d;
-  border-color: #ffd24d;
-}
+/* 수정/삭제 버튼 */
+.btn-edit,
 .btn-delete {
   font-size: 0.72rem;
   font-weight: 600;
@@ -499,20 +477,38 @@ watch(
   border-color: #aeaeae;
   transition: all 0.2s ease;
 }
+
+.btn-actions-header {
+  width: 110px;
+}
+.btn-actions-header button + button {
+  margin-left: 4px;
+}
+
+.btn-edit:not(:disabled) {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+}
+.btn-edit:not(:disabled):hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
 .btn-delete:not(:disabled) {
-  background-color: #e06060;
-  border-color: #e06060;
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
   color: #fff;
 }
 .btn-delete:not(:disabled):hover {
-  background-color: #e87c7c;
-  border-color: #e87c7c;
+  background-color: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
 }
 
 /* 체크박스 KB 스타일 */
 .form-check-input:checked {
-  background-color: #ffbc00;
-  border-color: #ffbc00;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 .form-check-input:focus {
   box-shadow: none;
@@ -550,9 +546,9 @@ watch(
 }
 
 .page-btn.active {
-  background: #ffbc00;
-  border-color: #ffbc00;
-  color: #545045;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
   font-weight: 700;
 }
 
@@ -586,8 +582,8 @@ watch(
 }
 
 .transaction-card.selected {
-  border-color: #ffbc00;
-  background-color: #fffaeb;
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-bg);
 }
 
 .card-checkbox {
@@ -662,7 +658,7 @@ watch(
 }
 
 .mobile-action-bar.is-active {
-  background: #fffaeb;
+  background: var(--color-primary-bg);
   border-color: #ffe9a8;
 }
 
@@ -677,7 +673,7 @@ watch(
 .selected-count {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #545045;
+  color: var(--color-primary-text);
 }
 
 .mobile-action-buttons {
@@ -693,22 +689,7 @@ watch(
   border: 1px solid;
 }
 
-.mobile-action-buttons .btn-edit {
-  background-color: #ffbc00;
-  border-color: #ffbc00;
-  color: #545045;
-}
-.mobile-action-buttons .btn-edit:disabled {
-  background-color: #f0f0f0;
-  border-color: #ddd;
-  color: #aaa;
-}
-
-.mobile-action-buttons .btn-delete {
-  background-color: #e06060;
-  border-color: #e06060;
-  color: #fff;
-}
+.mobile-action-buttons .btn-edit:disabled,
 .mobile-action-buttons .btn-delete:disabled {
   background-color: #f0f0f0;
   border-color: #ddd;
