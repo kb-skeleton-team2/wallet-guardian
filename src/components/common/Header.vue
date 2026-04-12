@@ -176,7 +176,7 @@ onBeforeUnmount(() => {
 }
 
 .logo-image {
-  height: 55px;
+  height: 48px;
   width: auto;
   max-width: 200px;
   object-fit: contain;
