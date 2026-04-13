@@ -200,7 +200,7 @@
             >
               {{ formatAmount(item) }}
             </td>
-            <td class="text-muted">{{ item.memo }}</td>
+            <td class="text-muted memo-cell">{{ item.memo }}</td>
             <td></td>
           </tr>
         </tbody>
@@ -440,6 +440,7 @@ onBeforeUnmount(() => {
   if (mobileMediaQuery) {
     mobileMediaQuery.removeEventListener('change', updateIsMobile);
   }
+  store.resetFilter();
 });
 </script>
 
@@ -600,6 +601,12 @@ onBeforeUnmount(() => {
   padding: 0.75rem 0.5rem;
   vertical-align: middle;
   text-align: center;
+}
+
+.memo-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .transactions-table tbody tr {
