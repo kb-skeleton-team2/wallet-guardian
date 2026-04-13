@@ -80,14 +80,14 @@ const calendarDays = computed(() => {
 
 function handleDayClick(day) {
   const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(
-    day
+    day,
   ).padStart(2, '0')}`;
   store.selectDate(key);
 }
 
 function getDayData(day) {
   const key = `${year.value}-${String(month.value).padStart(2, '0')}-${String(
-    day
+    day,
   ).padStart(2, '0')}`;
   return dayMap.value[key] || { income: 0, expense: 0 };
 }
@@ -123,39 +123,61 @@ function nextMonth() {
 <style scoped>
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-align: center;
-  gap: 4px;
+  gap: 2px;
 }
+
 .calendar-cell {
-  padding: 3px 2px;
-  min-height: 54px; /* 55px → 45px */
-  font-size: 0.75rem;
+  padding: 2px 1px;
+  min-height: 52px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.calendar-cell:hover {
+
+.calendar-cell:not(.header):hover {
   cursor: pointer;
   background-color: rgb(233, 237, 238);
 }
+
 .calendar-cell.header {
   font-weight: bold;
   background-color: #ffc107;
   color: white;
   border-radius: 4px;
   min-height: auto;
+  padding: 4px 0;
+  font-size: clamp(8px, 1.8vw, 12px);
 }
+
+.day-number {
+  font-size: clamp(9px, 2vw, 13px);
+  line-height: 1.2;
+}
+
 .today .day-number {
   background-color: #4a90e2;
   color: white;
   border-radius: 50%;
-  width: 26px;
-  height: 26px;
-  line-height: 26px;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
   margin: 0 auto;
 }
+
 .amount {
-  font-size: 0.8rem;
+  font-size: clamp(7px, 1.6vw, 11px);
   margin-top: 1px;
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
 }
+
 .income {
   color: #1976d2;
 }
