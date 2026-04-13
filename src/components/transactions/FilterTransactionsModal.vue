@@ -73,6 +73,7 @@
                       class="roller-column"
                       ref="fromYearRoller"
                       @scroll="handleFromYearScroll"
+                      @wheel.prevent="handleRollerWheel"
                     >
                       <div class="roller-space"></div>
                       <div
@@ -89,6 +90,7 @@
                       class="roller-column"
                       ref="fromMonthRoller"
                       @scroll="handleFromMonthScroll"
+                      @wheel.prevent="handleRollerWheel"
                     >
                       <div class="roller-space"></div>
                       <div
@@ -105,6 +107,7 @@
                       class="roller-column"
                       ref="fromDayRoller"
                       @scroll="handleFromDayScroll"
+                      @wheel.prevent="handleRollerWheel"
                     >
                       <div class="roller-space"></div>
                       <div
@@ -141,6 +144,7 @@
                       class="roller-column"
                       ref="toYearRoller"
                       @scroll="handleToYearScroll"
+                      @wheel.prevent="handleRollerWheel"
                     >
                       <div class="roller-space"></div>
                       <div
@@ -157,6 +161,7 @@
                       class="roller-column"
                       ref="toMonthRoller"
                       @scroll="handleToMonthScroll"
+                      @wheel.prevent="handleRollerWheel"
                     >
                       <div class="roller-space"></div>
                       <div
@@ -173,6 +178,7 @@
                       class="roller-column"
                       ref="toDayRoller"
                       @scroll="handleToDayScroll"
+                      @wheel.prevent="handleRollerWheel"
                     >
                       <div class="roller-space"></div>
                       <div
@@ -449,6 +455,16 @@ const toDateLabel = computed(() => {
     toDay.value
   ).padStart(2, '0')}`;
 });
+
+// 휠 핸들러 – 한 칸씩만 스크롤
+function handleRollerWheel(e) {
+  e.preventDefault();
+  const direction = e.deltaY > 0 ? 1 : -1;
+  e.currentTarget.scrollBy({
+    top: direction * ITEM_HEIGHT,
+    behavior: 'smooth',
+  });
+}
 
 // 스크롤 핸들러
 const handleFromYearScroll = (e) => {

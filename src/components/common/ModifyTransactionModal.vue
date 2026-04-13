@@ -38,6 +38,7 @@
                 class="roller-column"
                 ref="yearRoller"
                 @scroll="handleYearScroll"
+                @wheel.prevent="handleRollerWheel"
               >
                 <div class="roller-space"></div>
                 <div
@@ -54,6 +55,7 @@
                 class="roller-column"
                 ref="monthRoller"
                 @scroll="handleMonthScroll"
+                @wheel.prevent="handleRollerWheel"
               >
                 <div class="roller-space"></div>
                 <div
@@ -70,6 +72,7 @@
                 class="roller-column"
                 ref="dayRoller"
                 @scroll="handleDayScroll"
+                @wheel.prevent="handleRollerWheel"
               >
                 <div class="roller-space"></div>
                 <div
@@ -190,14 +193,14 @@ const dayRoller = ref(null);
 
 // ── Computed ──
 const daysInMonth = computed(() =>
-  new Date(selectedYear.value, selectedMonth.value, 0).getDate(),
+  new Date(selectedYear.value, selectedMonth.value, 0).getDate()
 );
 
 const formattedDow = computed(() => {
   const d = new Date(
     selectedYear.value,
     selectedMonth.value - 1,
-    selectedDay.value,
+    selectedDay.value
   );
   return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
 });
@@ -219,11 +222,20 @@ const allCategories = [
 ];
 
 const filteredCategories = computed(() =>
-  allCategories.filter((c) => c.group === type.value),
+  allCategories.filter((c) => c.group === type.value)
 );
 
 // ── 롤러 ──
 const ITEM_HEIGHT = 40;
+
+const handleRollerWheel = (e) => {
+  e.preventDefault();
+  const direction = e.deltaY > 0 ? 1 : -1;
+  e.currentTarget.scrollBy({
+    top: direction * ITEM_HEIGHT,
+    behavior: 'smooth',
+  });
+};
 
 const handleYearScroll = (e) => {
   const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
@@ -282,7 +294,7 @@ const handleSave = async () => {
   isSaving.value = true;
   try {
     const dateStr = `${selectedYear.value}-${String(
-      selectedMonth.value,
+      selectedMonth.value
     ).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
     const isoDateStr = `${dateStr}T09:00:00`;
     const res = await axios.put(
@@ -295,7 +307,7 @@ const handleSave = async () => {
         amount: rawAmount.value,
         memo: memo.value,
         createdAt: new Date().toISOString(),
-      },
+      }
     );
     store.modifyTransaction(res.data);
     emit('saved');
@@ -326,7 +338,7 @@ watch(
       memo.value = t.memo || '';
       showDatePicker.value = false;
     }
-  },
+  }
 );
 </script>
 

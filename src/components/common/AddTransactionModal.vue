@@ -40,6 +40,7 @@
                 class="roller-column"
                 ref="yearRoller"
                 @scroll="handleYearScroll"
+                @wheel.prevent="handleRollerWheel"
               >
                 <div class="roller-space"></div>
                 <div
@@ -57,6 +58,7 @@
                 class="roller-column"
                 ref="monthRoller"
                 @scroll="handleMonthScroll"
+                @wheel.prevent="handleRollerWheel"
               >
                 <div class="roller-space"></div>
                 <div
@@ -74,6 +76,7 @@
                 class="roller-column"
                 ref="dayRoller"
                 @scroll="handleDayScroll"
+                @wheel.prevent="handleRollerWheel"
               >
                 <div class="roller-space"></div>
                 <div
@@ -199,6 +202,15 @@ const formattedDow = computed(() => {
 });
 
 const ITEM_HEIGHT = 40;
+
+const handleRollerWheel = (e) => {
+  e.preventDefault();
+  const direction = e.deltaY > 0 ? 1 : -1;
+  e.currentTarget.scrollBy({
+    top: direction * ITEM_HEIGHT,
+    behavior: 'smooth',
+  });
+};
 
 const handleYearScroll = (e) => {
   const idx = Math.round(e.target.scrollTop / ITEM_HEIGHT);
