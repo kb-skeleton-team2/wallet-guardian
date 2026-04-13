@@ -577,7 +577,7 @@ function confirmToDate() {
 
 .filter-divider {
   height: 2px;
-  background: linear-gradient(90deg, #ffbc00 0%, #ffe08a 100%);
+  background: linear-gradient(90deg, var(--color-primary) 0%, #ffe08a 100%);
   border-radius: 2px;
   margin-bottom: 14px;
 }
@@ -620,8 +620,8 @@ function confirmToDate() {
 }
 
 .chip.active {
-  background: #ffbc00;
-  border-color: #ffbc00;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff;
 }
 
@@ -650,8 +650,8 @@ function confirmToDate() {
 }
 
 .category-item.active {
-  border-color: #ffbc00;
-  background: #fff8e1;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .category-icon {
@@ -690,7 +690,7 @@ function confirmToDate() {
 }
 
 .range-input:focus {
-  border-color: #ffbc00;
+  border-color: var(--color-primary);
   background: #fff;
 }
 
@@ -757,12 +757,12 @@ function confirmToDate() {
 }
 
 .btn-apply {
-  background: #ffbc00;
+  background: var(--color-primary);
   color: #fff;
 }
 
 .btn-apply:hover {
-  background: #ffd24d;
+  background: var(--color-primary-hover);
 }
 
 /* ==== 모달 Close 버튼 ==== */
@@ -791,7 +791,7 @@ function confirmToDate() {
 }
 
 .date-display:hover {
-  border-color: #ffbc00;
+  border-color: var(--color-primary);
   background: #fff;
 }
 
@@ -823,9 +823,9 @@ function confirmToDate() {
   right: 0;
   height: 36px;
   transform: translateY(-50%);
-  background: #fff9eb;
-  border-top: 1px solid #ffbc00;
-  border-bottom: 1px solid #ffbc00;
+  background: var(--color-primary-light);
+  border-top: 1px solid var(--color-primary);
+  border-bottom: 1px solid var(--color-primary);
 }
 
 .roller-column {
@@ -866,7 +866,7 @@ function confirmToDate() {
   padding: 8px;
   border: none;
   border-radius: 10px;
-  background: #ffbc00;
+  background: var(--color-primary);
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
@@ -874,7 +874,7 @@ function confirmToDate() {
 }
 
 .picker-confirm-btn:hover {
-  background: #ffd24d;
+  background: var(--color-primary-hover);
 }
 
 /* 트랜지션 */
